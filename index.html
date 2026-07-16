@@ -326,6 +326,9 @@ footer{color:var(--muted2);font-size:12px;text-align:center;margin-top:30px;line
     <div class="stats-grid" id="statsGrid"></div>
     <div style="margin-top:22px" class="row">
       <button class="btn" id="resetBtn">Fortschritt zurücksetzen</button>
+      <button class="btn" id="exportBtn">Lernstand exportieren</button>
+      <button class="btn" id="importBtn">Lernstand importieren</button>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none">
     </div>
     <footer id="statsFoot"></footer>
   </section>
@@ -4278,12 +4281,13 @@ const catColor = n => (CATS.find(c=>c.name===n)||{}).c || "#5b8cff";
 /* ===== ZUSTAND (Spaced Repetition, localStorage) ===== */
 const LS_KEY="wipsy_sr_v2";
 const DAY=86400000;
-let STATE=load();
+const Store={SESS:null,STATE:null,ARST:null,EXST:null};
+Store.STATE=load();
 function load(){ try{return JSON.parse(localStorage.getItem(LS_KEY))||{};}catch(e){return {};} }
-function save(){ try{localStorage.setItem(LS_KEY,JSON.stringify(STATE));}catch(e){} }
-function cs(id){ if(!STATE[id]) STATE[id]={box:0,due:0,reps:0,lapses:0,w:0,s:0,m:0,e:0}; return STATE[id]; }
-function isDue(id){ const s=STATE[id]; if(!s||s.reps===0) return true; return s.due<=Date.now(); }
-function isLearned(id){ const s=STATE[id]; return !!s && s.reps>0; }
+function save(){ try{localStorage.setItem(LS_KEY,JSON.stringify(Store.STATE));}catch(e){} }
+function cs(id){ if(!Store.STATE[id]) Store.STATE[id]={box:0,due:0,reps:0,lapses:0,w:0,s:0,m:0,e:0}; return Store.STATE[id]; }
+function isDue(id){ const s=Store.STATE[id]; if(!s||s.reps===0) return true; return s.due<=Date.now(); }
+function isLearned(id){ const s=Store.STATE[id]; return !!s && s.reps>0; }
 function intervalForBox(b){ const map={1:1,2:2,3:4,4:8,5:16}; return (map[b]||32)*DAY; }
 function applyRating(id,g){
   const s=cs(id); s.reps++; s[g]=(s[g]||0)+1;
@@ -4302,7 +4306,7 @@ function applyRating(id,g){
 function statsFor(list){
   let learned=0,open=0,due=0,corr=0,total=0;
   for(const card of list){
-    const id=card.id, s=STATE[id];
+    const id=card.id, s=Store.STATE[id];
     if(isLearned(id)) learned++; else open++;
     if(isDue(id)) due++;
     if(s){ const r=(s.s||0)+(s.m||0)+(s.e||0); corr+=r; total+=r+(s.w||0); }
@@ -4356,7 +4360,7 @@ function renderHome(){
    auf "Schwer" bewertet wurde. "Erneut"/Wiederholen hält den Slot belegt und
    blockiert damit neue Karten. Wiedervorlagen erfolgen mit Abstand (nicht
    direkt hintereinander) -> Desirable Difficulty / Mini-Spacing. */
-let SESS=null;
+Store.SESS=null;
 
 // Wie viele NEUE Karten gleichzeitig in Einführung sein dürfen. Default 1 (striktes Gating).
 function maxConcurrentNew(){
@@ -4388,17 +4392,17 @@ function buildSession(catName){
 
 // Führt neue Karten ein, solange das Gating-Limit nicht erreicht ist.
 function fillNew(){
-  while(SESS.unstable < SESS.maxNew && SESS.newPool.length){
-    const id=SESS.newPool.shift();
-    SESS.learning[id]=true;
-    SESS.unstable++;
-    const pos=Math.min(SESS.queue.length, 2); // kurz nach vorne, mit kleinem Abstand
-    SESS.queue.splice(pos,0,id);
+  while(Store.SESS.unstable < Store.SESS.maxNew && Store.SESS.newPool.length){
+    const id=Store.SESS.newPool.shift();
+    Store.SESS.learning[id]=true;
+    Store.SESS.unstable++;
+    const pos=Math.min(Store.SESS.queue.length, 2); // kurz nach vorne, mit kleinem Abstand
+    Store.SESS.queue.splice(pos,0,id);
   }
 }
 
 function startSession(catName){
-  SESS=buildSession(catName);
+  Store.SESS=buildSession(catName);
   fillNew();
   document.getElementById('studyName').textContent=catName||'Alle Kategorien';
   show('study'); renderCard();
@@ -4406,16 +4410,16 @@ function startSession(catName){
 function startAllDue(){ startSession(null); }
 
 function renderSessBar(){
-  const pct=SESS.total? Math.round(SESS.done/SESS.total*100):0;
+  const pct=Store.SESS.total? Math.round(Store.SESS.done/Store.SESS.total*100):0;
   document.getElementById('sessFill').style.width=pct+'%';
-  document.getElementById('sessCount').textContent=`${SESS.done} / ${SESS.total}`;
+  document.getElementById('sessCount').textContent=`${Store.SESS.done} / ${Store.SESS.total}`;
 }
 function renderCard(){
   renderSessBar();
   const body=document.getElementById('studyBody');
-  if(!SESS.queue.length && SESS.newPool.length) fillNew(); // Sicherung: neue Karten nachziehen
-  if(!SESS.queue.length){ return renderDone(); }
-  const id=SESS.queue[0];
+  if(!Store.SESS.queue.length && Store.SESS.newPool.length) fillNew(); // Sicherung: neue Karten nachziehen
+  if(!Store.SESS.queue.length){ return renderDone(); }
+  const id=Store.SESS.queue[0];
   const card=DATA.find(c=>c.id===id);
   const cc=catColor(card.cat);
   const hasInfo=card.hasInfo;
@@ -4425,10 +4429,10 @@ function renderCard(){
       <button class="infobtn" id="infoBtn" ${hasInfo?'':'disabled'} title="Zusatzwissen (i)">i</button></div>
     <div class="qlabel">Frage</div>
     <div class="frage">${esc(card.q)}</div>`;
-  if(SESS.revealed){
+  if(Store.SESS.revealed){
     html+=`<div class="divider"></div><div class="alabel">Antwort</div>
       <div class="antwort">${esc(card.a_short||card.a)}</div>`;
-    if(SESS.showInfo && hasInfo) html+=zusatzHTML(card);
+    if(Store.SESS.showInfo && hasInfo) html+=zusatzHTML(card);
     html+=`<div class="actions">
       <button class="rate again" data-g="w">Wiederholen<small>1</small></button>
       <button class="rate hard" data-g="s">Schwer<small>2</small></button>
@@ -4440,11 +4444,11 @@ function renderCard(){
   html+=`</div>`;
   body.innerHTML=html;
 
-  if(!SESS.revealed){
+  if(!Store.SESS.revealed){
     body.querySelector('.card').onclick=(e)=>{ if(e.target.id==='infoBtn')return; reveal(); };
   }
   const ib=document.getElementById('infoBtn');
-  if(ib && hasInfo) ib.onclick=(e)=>{e.stopPropagation(); SESS.showInfo=!SESS.showInfo; if(!SESS.revealed)reveal(); else renderCard();};
+  if(ib && hasInfo) ib.onclick=(e)=>{e.stopPropagation(); Store.SESS.showInfo=!Store.SESS.showInfo; if(!Store.SESS.revealed)reveal(); else renderCard();};
   body.querySelectorAll('.rate').forEach(b=> b.onclick=()=>rate(b.dataset.g));
 }
 function zusatzHTML(card){
@@ -4457,42 +4461,60 @@ function zusatzHTML(card){
   h+=f('qz','Quelle / Klausurhinweis','quelle');
   h+=`</div>`; return h;
 }
-function reveal(){ if(SESS.revealed)return; SESS.revealed=true; renderCard(); }
+function reveal(){ if(Store.SESS.revealed)return; Store.SESS.revealed=true; renderCard(); }
 function rate(g){
-  const id=SESS.queue.shift();
-  const wasLearning = !!SESS.learning[id];
+  // Schutz: Bewertung nur bei aufgedeckter Karte mit gefüllter Queue zulassen.
+  // Verhindert doppeltes Auslesen der Queue durch Doppel-/Mehrfachklicks oder
+  // Tastendrücke (Race Condition -> sonst würde eine Karte übersprungen).
+  if(!Store.SESS || !Store.SESS.queue.length || !Store.SESS.revealed) return;
+  const id=Store.SESS.queue.shift();
+  const wasLearning = !!Store.SESS.learning[id];
   applyRating(id,g);
+  let requeue=false, gap=4;          // requeue: Karte erscheint in dieser Runde nochmal
   if(g==='w'){
-    // Erneut: Karte bleibt in der Runde, mit Abstand wieder einreihen.
-    // Bleibt "unstable" -> blockiert weiterhin neue Karten (Gating).
-    const pos=Math.min(SESS.queue.length,4);
-    SESS.queue.splice(pos,0,id);
+    // Erneut: Karte bleibt "unstable" -> blockiert weiterhin neue Karten (Gating).
+    requeue=true; gap=4;
   } else {
     // >= Schwer
     if(wasLearning){
-      SESS.learning[id]=false;
-      SESS.unstable--;              // Gate öffnet: nächste neue Karte darf kommen
+      Store.SESS.learning[id]=false;
+      Store.SESS.unstable--;              // Gate öffnet: nächste neue Karte darf kommen
       if(g==='s'){
-        // Schwer: heute nochmal sehen, zählt aber schon als stabilisiert
-        const pos=Math.min(SESS.queue.length,6);
-        SESS.queue.splice(pos,0,id);
+        requeue=true; gap=6;        // Schwer: heute nochmal sehen, aber mit Abstand
       } else {
-        SESS.done++;                // Mittel/Einfach: für diese Sitzung erledigt
+        Store.SESS.done++;                // Mittel/Einfach: für diese Sitzung erledigt
       }
     } else {
-      SESS.done++;                  // Wiederholungskarte (oder schon stabilisiert) erledigt
+      Store.SESS.done++;                  // Wiederholungskarte (oder schon stabilisiert) erledigt
     }
   }
+  // Erst neue Karten nachziehen, DANN die zu wiederholende Karte mit Abstand
+  // einreihen. Frühere Reihenfolge führte bei kurzer Queue dazu, dass die Karte
+  // sofort wieder vorne landete: "Schwer" musste doppelt gedrückt werden und
+  // "Erneut" konnte in einer Endlosschleife hängen bleiben.
   fillNew();
-  SESS.revealed=false; SESS.showInfo=false;
+  if(requeue){
+    // Enthielte die Queue sonst nur diese eine Karte, warten aber noch neue
+    // Karten: eine neue Karte einführen, damit echter Abstand entsteht und die
+    // Runde immer vorankommt (kein Steckenbleiben auf einer Karte mehr).
+    if(Store.SESS.queue.length===0 && Store.SESS.newPool.length){
+      const nid=Store.SESS.newPool.shift();
+      Store.SESS.learning[nid]=true; Store.SESS.unstable++;
+      Store.SESS.queue.push(nid);
+    }
+    let pos=Math.min(Store.SESS.queue.length,gap);
+    if(Store.SESS.queue.length>0) pos=Math.max(1,pos);  // nie sofort exakt dieselbe Karte
+    Store.SESS.queue.splice(pos,0,id);
+  }
+  Store.SESS.revealed=false; Store.SESS.showInfo=false;
   renderCard(); renderHead();
 }
 function renderDone(){
-  const list = SESS.cat? byCat(SESS.cat):DATA;
+  const list = Store.SESS.cat? byCat(Store.SESS.cat):DATA;
   const s=statsFor(list);
   document.getElementById('studyBody').innerHTML=
    `<div class="panel"><div class="big">✓</div><h2>Runde geschafft</h2>
-    <p>${SESS.cat||'Alle Kategorien'} · ${SESS.total} Karten in dieser Sitzung bearbeitet.</p>
+    <p>${Store.SESS.cat||'Alle Kategorien'} · ${Store.SESS.total} Karten in dieser Sitzung bearbeitet.</p>
     <div class="statline">
       <div><div class="n">${s.learned}</div><div class="l">gelernt</div></div>
       <div><div class="n">${s.open}</div><div class="l">offen</div></div>
@@ -4501,7 +4523,7 @@ function renderDone(){
     </div>
     <button class="bigbtn" id="againBtn">Weiter lernen</button>
     <div style="margin-top:12px"><button class="btn ghost" id="homeBtn2">Zur Startseite</button></div></div>`;
-  document.getElementById('againBtn').onclick=()=>startSession(SESS.cat);
+  document.getElementById('againBtn').onclick=()=>startSession(Store.SESS.cat);
   document.getElementById('homeBtn2').onclick=()=>{renderHome();show('home');};
 }
 
@@ -4534,31 +4556,92 @@ function renderStats(){
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 /* ===== NAV / EVENTS ===== */
-document.getElementById('navHome').onclick=()=>{renderHome();show('home');};
-document.getElementById('navStats').onclick=()=>{renderStats();show('stats');};
-document.getElementById('navAR').onclick=()=>{stopTimerClock();renderARHome();};
+// Beim Verlassen einer Ansicht laufende Timer stoppen, sonst tickt der AR-Timer
+// im Hintergrund weiter und der Klausur-Countdown feuert später ein "Zeit um!"-
+// Alert, obwohl man die Klausur längst verlassen hat (Speicherleck / Robustheit).
+function stopAllTimers(){ stopTimerClock(); if(typeof stopExamTimer==='function') stopExamTimer(); }
+document.getElementById('navHome').onclick=()=>{stopAllTimers();renderHome();show('home');};
+document.getElementById('navStats').onclick=()=>{stopAllTimers();renderStats();show('stats');};
+document.getElementById('navAR').onclick=()=>{stopAllTimers();renderARHome();};
 document.getElementById('exitStudy').onclick=()=>{renderHome();show('home');};
 document.getElementById('studyAllDue').onclick=startAllDue;
 document.getElementById('resetBtn').onclick=()=>{
   if(confirm('Gesamten Lernfortschritt wirklich löschen? Das kann nicht rückgängig gemacht werden.')){
-    STATE={}; save(); renderStats(); renderHead();
+    Store.STATE={}; save(); renderStats(); renderHead();
   }
 };
+
+/* ===== EXPORT / IMPORT DES LERNSTANDS =====
+   Sichert bzw. stellt saemtliche localStorage-Schluessel mit Praefix "wipsy_"
+   wieder her (Spaced Repetition, Active Recall, Klausurtraining, Theme).
+   Werte werden roh als String gespeichert -> verlustfreier Round-Trip. */
+const WIPSY_PREFIX='wipsy_';
+function collectWipsyState(){
+  const data={};
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k && k.indexOf(WIPSY_PREFIX)===0) data[k]=localStorage.getItem(k);
+  }
+  return data;
+}
+function exportLernstand(){
+  const payload={app:'WiPsy Lernplattform',type:'wipsy-lernstand',version:1,
+    exportedAt:new Date().toISOString(),data:collectWipsyState()};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const d=new Date(), pad=n=>String(n).padStart(2,'0');
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='wipsy_lernstand_'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes())+'.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function importLernstand(file){
+  const reader=new FileReader();
+  reader.onerror=()=>alert('Datei konnte nicht gelesen werden.');
+  reader.onload=()=>{
+    let payload;
+    try{ payload=JSON.parse(reader.result); }
+    catch(e){ alert('Ungültige Datei: kein gültiges JSON.'); return; }
+    if(!payload || typeof payload!=='object' || !payload.data || typeof payload.data!=='object'){
+      alert('Ungültige Datei: kein WiPsy-Lernstand.'); return;
+    }
+    // Nur erlaubte Schluessel (Praefix wipsy_) uebernehmen -> keine Fremd-Keys.
+    const keys=Object.keys(payload.data).filter(k=>k.indexOf(WIPSY_PREFIX)===0);
+    if(!keys.length){ alert('Datei enthält keinen WiPsy-Lernstand (Schlüssel mit Präfix wipsy_).'); return; }
+    const when=payload.exportedAt?(' (Stand '+payload.exportedAt+')'):'';
+    if(!confirm('Import überschreibt deinen aktuellen Lernstand'+when+'.\n'+keys.length+' Bereich(e) werden ersetzt. Fortfahren?\nDie Seite wird anschließend neu geladen.')) return;
+    try{
+      for(const k of keys) localStorage.setItem(k, payload.data[k]);
+    }catch(e){ alert('Import fehlgeschlagen beim Speichern.'); return; }
+    // Neu laden = robusteste Wiederherstellung: der gesamte In-Memory-Zustand
+    // (Store.STATE, Store.ARST, Store.EXST, Theme) wird frisch aus localStorage aufgebaut.
+    location.reload();
+  };
+  reader.readAsText(file);
+}
+document.getElementById('exportBtn').onclick=exportLernstand;
+document.getElementById('importBtn').onclick=()=>document.getElementById('importFile').click();
+document.getElementById('importFile').onchange=function(){
+  if(this.files && this.files[0]) importLernstand(this.files[0]);
+  this.value=''; // gleiche Datei erneut waehlbar
+};
+
 document.addEventListener('keydown',e=>{
   if(V.study.classList.contains('hidden'))return;
-  if(!SESS||!SESS.queue.length)return;
-  if(e.code==='Space'){e.preventDefault(); if(!SESS.revealed)reveal();}
-  else if(e.key==='i'||e.key==='I'){const c=DATA.find(x=>x.id===SESS.queue[0]); if(c&&c.hasInfo){SESS.showInfo=!SESS.showInfo; if(!SESS.revealed)reveal(); else renderCard();}}
-  else if(SESS.revealed && ['1','2','3','4'].includes(e.key)){rate({'1':'w','2':'s','3':'m','4':'e'}[e.key]);}
+  if(!Store.SESS||!Store.SESS.queue.length)return;
+  if(e.code==='Space'){e.preventDefault(); if(!Store.SESS.revealed)reveal();}
+  else if(e.key==='i'||e.key==='I'){const c=DATA.find(x=>x.id===Store.SESS.queue[0]); if(c&&c.hasInfo){Store.SESS.showInfo=!Store.SESS.showInfo; if(!Store.SESS.revealed)reveal(); else renderCard();}}
+  else if(Store.SESS.revealed && ['1','2','3','4'].includes(e.key)){rate({'1':'w','2':'s','3':'m','4':'e'}[e.key]);}
 });
 
 /* ===== ACTIVE RECALL (Blurting) ===== */
 const AR = JSON.parse(document.getElementById('ar-data').textContent);
 const AR_KEY = "wipsy_ar_v1";
-let ARST = (()=>{ try{return JSON.parse(localStorage.getItem(AR_KEY))||{};}catch(e){return{};} })();
-function arSave(){ try{localStorage.setItem(AR_KEY,JSON.stringify(ARST));}catch(e){} }
-function arRes(bi,ti){ return (ARST[bi]&&ARST[bi][ti])||null; }
-function arSetRes(bi,ti,o){ if(!ARST[bi])ARST[bi]={}; ARST[bi][ti]=o; arSave(); }
+Store.ARST = (()=>{ try{return JSON.parse(localStorage.getItem(AR_KEY))||{};}catch(e){return{};} })();
+function arSave(){ try{localStorage.setItem(AR_KEY,JSON.stringify(Store.ARST));}catch(e){} }
+function arRes(bi,ti){ return (Store.ARST[bi]&&Store.ARST[bi][ti])||null; }
+function arSetRes(bi,ti,o){ if(!Store.ARST[bi])Store.ARST[bi]={}; Store.ARST[bi][ti]=o; arSave(); }
 
 function arNorm(s){ return (s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
 function arAuto(text,r){
@@ -4827,6 +4910,101 @@ function renderRelearn(){
   window.scrollTo(0,0);
 }
 
+/* ===== SELBSTTEST: Spaced-Repetition-Queue-Logik =====
+   Reines JS, keine externen Abhaengigkeiten. Treibt die ECHTEN Funktionen
+   buildSession(), fillNew() und rate() ueber viele zufaellige Sitzungen und
+   prueft drei Invarianten:
+     (1) keine Endlosschleife  -> Terminierung innerhalb eines Schritt-Limits
+     (2) keine uebersprungenen Karten -> jede Karte der Sitzung wird genau
+         einmal endgueltig (done++) bewertet, und keine fremde ID taucht auf
+     (3) jede Sitzung erreicht done === total
+   Der Test veraendert den echten Lernstand NICHT: Store.STATE, Store.SESS und
+   der localStorage-Schluessel werden vorher gesichert und danach wiederhergestellt;
+   die render-Funktionen werden fuer die Laufzeit durch No-Ops ersetzt.
+   Aufruf: WIPSY_SELFTEST() in der Konsole oder Seite mit #selftest oeffnen. */
+function WIPSY_SELFTEST(runs){
+  runs = runs||500;
+  const GRADES=['w','s','m','e'];
+  const rnd=n=>Math.floor(Math.random()*n);
+  const pick=a=>a[rnd(a.length)];
+  const NEWLIMITS=[1,2,3,5];
+  const catNames=CATS.map(c=>c.name);
+
+  // --- Sicherung des echten Zustands ---
+  const snapState=JSON.stringify(Store.STATE);
+  const snapSess=Store.SESS;
+  const snapLS=localStorage.getItem(LS_KEY);
+  const nl=document.getElementById('newLimit'), am=document.getElementById('allMode');
+  const snapNL=nl?nl.value:null, snapAM=am?am.checked:null;
+  const _renderCard=renderCard, _renderHead=renderHead, _renderSessBar=renderSessBar;
+  renderCard=function(){}; renderHead=function(){}; renderSessBar=function(){};
+
+  const failures=[];
+  const fail=(i,msg,extra)=>failures.push({run:i,msg,extra});
+
+  try{
+    for(let i=0;i<runs;i++){
+      // Zufaelliger Ausgangszustand: ein Teil der Karten schon gelernt (Wdh-Zweig),
+      // Rest neu; faellig/nicht-faellig gemischt.
+      const st={};
+      for(const c of DATA){
+        if(Math.random()<0.45){
+          const due = Math.random()<0.6 ? Date.now()-DAY : Date.now()+DAY;
+          st[c.id]={box:1+rnd(6),due,reps:1+rnd(5),lapses:0,w:rnd(3),s:rnd(3),m:rnd(3),e:rnd(3)};
+        }
+      }
+      Store.STATE=st;
+      if(nl) nl.value=String(pick(NEWLIMITS));
+      if(am) am.checked=Math.random()<0.5;
+      const cat = Math.random()<0.5 ? pick(catNames) : null;
+
+      Store.SESS=buildSession(cat);
+      const S=Store.SESS;
+      const allIds=new Set(S.queue.concat(S.newPool));
+      if(S.total!==allIds.size) fail(i,'total != Kartenanzahl',{total:S.total,ids:allIds.size,cat});
+      fillNew();
+
+      const cap = S.total*300 + 2000;
+      const terminal=new Set();
+      let steps=0, brokeLoop=false;
+      while(S.queue.length){
+        if(++steps>cap){ fail(i,'Endlosschleife (Schritt-Limit ueberschritten)',{cap,done:S.done,total:S.total,cat}); brokeLoop=true; break; }
+        const id=S.queue[0];
+        if(!allIds.has(id)){ fail(i,'fremde/erfundene Karten-ID in Queue',{id,cat}); break; }
+        S.revealed=true;
+        const before=S.done;
+        rate(pick(GRADES));
+        if(S.done>before) terminal.add(id);
+      }
+      if(brokeLoop) continue;
+      if(S.total>0){
+        if(S.done!==S.total) fail(i,'done != total',{done:S.done,total:S.total,cat});
+        if(terminal.size!==allIds.size) fail(i,'uebersprungene Karten (nicht alle endgueltig bewertet)',{terminal:terminal.size,soll:allIds.size,cat});
+        if(S.newPool.length!==0) fail(i,'newPool nicht geleert',{rest:S.newPool.length,cat});
+        if(S.unstable!==0) fail(i,'unstable != 0 am Ende',{unstable:S.unstable,cat});
+      }
+    }
+  } finally {
+    // --- Wiederherstellung ---
+    renderCard=_renderCard; renderHead=_renderHead; renderSessBar=_renderSessBar;
+    Store.STATE=JSON.parse(snapState);
+    Store.SESS=snapSess;
+    if(snapLS===null){ try{localStorage.removeItem(LS_KEY);}catch(e){} }
+    else { try{localStorage.setItem(LS_KEY,snapLS);}catch(e){} }
+    if(nl&&snapNL!==null) nl.value=snapNL;
+    if(am&&snapAM!==null) am.checked=snapAM;
+  }
+
+  const ok=failures.length===0;
+  const summary='WIPSY_SELFTEST: '+runs+' Sitzungen, '+(ok?'ALLE bestanden':(failures.length+' FEHLER'));
+  if(ok) console.log('%c'+summary,'color:#2a9d3f;font-weight:700');
+  else { console.error(summary); failures.slice(0,20).forEach(f=>console.error(' Run '+f.run+': '+f.msg, f.extra||'')); }
+  return {ok,runs,failures};
+}
+if(location.hash && location.hash.toLowerCase().indexOf('selftest')>=0){
+  try{ WIPSY_SELFTEST(); }catch(e){ console.error('WIPSY_SELFTEST Ausnahme:',e); }
+}
+
 /* ===== START ===== */
 renderHome(); show('home');
 </script>
@@ -4849,13 +5027,13 @@ renderHome(); show('home');
 /* ===== KLAUSURTRAINING ===== */
 const EXAMS = JSON.parse(document.getElementById('exam-data').textContent);
 const EX_KEY = 'wipsy_exam_v1';
-let EXST = (()=>{try{return JSON.parse(localStorage.getItem(EX_KEY))||{};}catch(e){return{};}})();
-function exSave(){try{localStorage.setItem(EX_KEY,JSON.stringify(EXST));}catch(e){}}
+Store.EXST = (()=>{try{return JSON.parse(localStorage.getItem(EX_KEY))||{};}catch(e){return{};}})();
+function exSave(){try{localStorage.setItem(EX_KEY,JSON.stringify(Store.EXST));}catch(e){}}
 function exEsc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 let EXTIMER=null;
 
 function exScore(ex){
-  const st=EXST[ex.key]||{}; let got=0,rated=0;
+  const st=Store.EXST[ex.key]||{}; let got=0,rated=0;
   for(const q of ex.fragen){ if(st[q.id]!==undefined){got+=st[q.id]*q.punkte; rated++;} }
   return {got:Math.round(got*10)/10, rated};
 }
@@ -4923,15 +5101,15 @@ function renderExam(key){
   const paint=()=>{
     const sc=exScore(ex);
     document.getElementById('exScore').innerHTML='<b>'+sc.got+'</b> / '+ex.total+' P · '+sc.rated+'/'+ex.fragen.length+' bewertet';
-    const st=EXST[ex.key]||{};
+    const st=Store.EXST[ex.key]||{};
     el.querySelectorAll('[data-rate]').forEach(b=>{
       const on = st[b.dataset.q]!==undefined && String(st[b.dataset.q])===b.dataset.rate;
       b.classList.toggle('on',on);
     });
   };
   el.querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{
-    if(!EXST[ex.key])EXST[ex.key]={};
-    EXST[ex.key][b.dataset.q]=parseFloat(b.dataset.rate);
+    if(!Store.EXST[ex.key])Store.EXST[ex.key]={};
+    Store.EXST[ex.key][b.dataset.q]=parseFloat(b.dataset.rate);
     exSave(); paint();
   });
   let remain=90*60;
