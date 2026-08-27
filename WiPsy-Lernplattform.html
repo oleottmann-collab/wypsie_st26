@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WiPsy Lernplattform - Klausurvorbereitung SS 2026</title>
+<style>
+:root{
+  --bg:#0f1720; --panel:#16212e; --panel2:#1c2a3a; --ink:#e8eef5; --muted:#9fb0c3;
+  --accent:#4aa3df; --accent2:#7ecb8f; --warn:#e6b45e; --danger:#e07a7a;
+  --line:#26374a; --chip:#22344a;
+  --radius:14px; --shadow:0 6px 20px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.6;font-size:16px}
+a{color:var(--accent)}
+.layout{display:flex;min-height:100vh}
+/* Sidebar */
+.sidebar{width:280px;flex:0 0 280px;background:var(--panel);border-right:1px solid var(--line);
+  position:sticky;top:0;height:100vh;overflow-y:auto;padding:20px 14px}
+.brand{font-weight:800;font-size:18px;letter-spacing:.3px;margin:4px 8px 4px}
+.brand span{color:var(--accent)}
+.subtitle{color:var(--muted);font-size:12.5px;margin:0 8px 16px}
+.navlink{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:10px;color:var(--ink);
+  text-decoration:none;cursor:pointer;font-size:14.5px;border:1px solid transparent}
+.navlink:hover{background:var(--panel2)}
+.navlink.active{background:var(--panel2);border-color:var(--line)}
+.navlink .num{font-size:11px;color:var(--muted);min-width:22px}
+.navlink .dot{margin-left:auto;width:9px;height:9px;border-radius:50%;background:transparent;border:1.5px solid var(--line)}
+.navlink.done .dot{background:var(--accent2);border-color:var(--accent2)}
+.side-foot{margin:16px 8px 8px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:12px}
+.side-foot button{margin-top:8px}
+/* Main */
+.main{flex:1;min-width:0}
+.topbar{display:none}
+.content{max-width:920px;margin:0 auto;padding:34px 30px 90px}
+section.block{display:none;animation:fade .25s ease}
+section.block.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1.page{font-size:27px;margin:0 0 6px}
+.kicker{color:var(--accent);font-weight:700;font-size:12.5px;letter-spacing:1.4px;text-transform:uppercase}
+.lead{color:var(--muted);font-size:15px;margin:6px 0 22px}
+h2{font-size:20px;margin:30px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:16.5px;margin:20px 0 6px;color:#dbe7f4}
+p{margin:9px 0}
+ul,ol{margin:9px 0 9px 4px;padding-left:22px}
+li{margin:5px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin:16px 0;box-shadow:var(--shadow)}
+.card.tight{padding:14px 16px}
+.def{background:var(--panel2);border-left:4px solid var(--accent);border-radius:8px;padding:12px 15px;margin:12px 0}
+.def b,.def strong{color:#fff}
+.tag{display:inline-block;background:var(--chip);color:var(--muted);border:1px solid var(--line);
+  border-radius:999px;padding:3px 11px;font-size:12px;margin:3px 6px 3px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+.compare{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px}
+.compare th,.compare td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+.compare th{background:var(--panel2);color:#fff}
+.calc{background:#101b12;border:1px solid #285138;border-radius:10px;padding:14px 16px;margin:12px 0;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:14px;overflow-x:auto}
+.calc .r{color:var(--accent2)}
+.hl{color:var(--warn);font-weight:600}
+.pill{display:inline-block;background:var(--accent);color:#04121d;font-weight:700;border-radius:8px;padding:2px 9px;font-size:13px}
+/* Quiz */
+.quiz{margin:14px 0}
+.q{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:11px 0}
+.q .qtext{font-weight:600}
+.q .ans{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);color:#d7e4f1}
+.q.open .ans{display:block}
+.q button.reveal{margin-top:10px;background:var(--panel2);color:var(--accent);border:1px solid var(--line);
+  border-radius:8px;padding:6px 13px;font-size:13px;cursor:pointer}
+.q button.reveal:hover{background:var(--chip)}
+button.primary{background:var(--accent);color:#04121d;border:none;border-radius:9px;padding:9px 15px;font-weight:700;cursor:pointer;font-size:14px}
+button.ghost{background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:9px;padding:8px 13px;cursor:pointer;font-size:13px}
+.mark-done{margin:26px 0 4px;display:flex;align-items:center;gap:12px}
+.callout{border-left:4px solid var(--warn);background:#211c10;border-radius:8px;padding:12px 15px;margin:14px 0;font-size:14.5px}
+.callout.exam{border-color:var(--danger);background:#241414}
+.callout.tip{border-color:var(--accent2);background:#0f1c14}
+.src{color:var(--muted);font-size:12.5px;margin-top:6px}
+.mininav{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 18px}
+.mininav a{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12.5px;text-decoration:none;color:var(--muted)}
+.mininav a:hover{color:#fff}
+/* Mobile */
+.menu-btn{display:none}
+@media(max-width:860px){
+  .sidebar{position:fixed;z-index:40;transform:translateX(-100%);transition:transform .25s;box-shadow:var(--shadow)}
+  .sidebar.show{transform:none}
+  .topbar{display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:30;background:var(--panel);
+    border-bottom:1px solid var(--line);padding:12px 16px}
+  .menu-btn{display:inline-flex;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:7px 11px;cursor:pointer;font-size:16px}
+  .content{padding:20px 16px 80px}
+  .scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:35}
+  .scrim.show{display:block}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">WiPsy <span>Lernplattform</span></div>
+    <div class="subtitle">Wirtschaftspsychologie I &middot; Klausur SS 2026 &middot; Prof. Süßmair</div>
+    <nav id="nav">
+      <a class="navlink" data-target="start"><span class="num">0</span> Start &amp; Lernplan <span class="dot"></span></a>
+      <a class="navlink" data-target="grundlagen"><span class="num">1</span> Grundlagen &amp; Wissenschaft <span class="dot"></span></a>
+      <a class="navlink" data-target="fichter"><span class="num">1b</span> Fichter: Methoden (30&nbsp;%) <span class="dot"></span></a>
+      <a class="navlink" data-target="commanding"><span class="num">2</span> Commanding Heights <span class="dot"></span></a>
+      <a class="navlink" data-target="oekonomie"><span class="num">3</span> Ökonomie &amp; Wert <span class="dot"></span></a>
+      <a class="navlink" data-target="finanz"><span class="num">4</span> Finanzpsychologie <span class="dot"></span></a>
+      <a class="navlink" data-target="entscheidung"><span class="num">5</span> Entscheidung &amp; Heuristiken <span class="dot"></span></a>
+      <a class="navlink" data-target="organisation"><span class="num">6</span> Organisation &amp; Führung <span class="dot"></span></a>
+      <a class="navlink" data-target="personal"><span class="num">7</span> Personal &amp; Auswahl <span class="dot"></span></a>
+      <a class="navlink" data-target="gesellschaft"><span class="num">8</span> Gesellschaft &amp; Entwicklung <span class="dot"></span></a>
+      <a class="navlink" data-target="fallstudien"><span class="num">9</span> Fallstudien <span class="dot"></span></a>
+      <a class="navlink" data-target="zeitung"><span class="num">10</span> Zeitungsartikel-Bezug <span class="dot"></span></a>
+      <a class="navlink" data-target="klausur"><span class="num">11</span> Klausurtraining <span class="dot"></span></a>
+    </nav>
+    <div class="side-foot">
+      Fortschritt wird lokal in deinem Browser gespeichert.
+      <br><button class="ghost" onclick="resetProgress()">Fortschritt zurücksetzen</button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" onclick="toggleMenu(false)"></div>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="menu-btn" onclick="toggleMenu(true)">&#9776;</button>
+      <strong>WiPsy Lernplattform</strong>
+    </div>
+    <div class="content" id="content">
+<!-- ================= START ================= -->
+<section class="block" id="start">
+  <div class="kicker">Klausur SS 2026 &middot; in wenigen Tagen</div>
+  <h1 class="page">Deine Lernplattform für Wirtschaftspsychologie I</h1>
+  <p class="lead">Jeder Lernblock erklärt das Thema von Grund auf &ndash; auch wenn du es noch gar nicht kannst. Mit Definitionen, ausgerechneten Beispielen, Vergleichstabellen und Übungsfragen mit Musterlösung. Die Schwerpunkte deiner Klausur sind besonders ausführlich.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">So arbeitest du damit</h3>
+    <ol>
+      <li>Geh die Blöcke links der Reihe nach durch. Lies zuerst den <b>Lernzettel</b>, dann rechne die <b>Beispiele</b> selbst nach.</li>
+      <li>Mach am Ende jedes Blocks die <b>Übungsfragen</b> &ndash; erst selbst beantworten, dann Musterlösung aufdecken.</li>
+      <li>Hak den Block als <b>„gelernt“</b> ab. Dein Fortschritt bleibt im Browser gespeichert.</li>
+      <li>Nutze <a data-goto="klausur">Block 11 (Klausurtraining)</a> als Generalprobe.</li>
+    </ol>
+  </div>
+
+  <h2>4-Tage-Lernplan</h2>
+  <table class="compare">
+    <tr><th>Tag</th><th>Fokus</th><th>Blöcke</th></tr>
+    <tr><td><b>Tag 1</b></td><td>Denkrahmen &amp; großer Streit der Ideen</td><td>1 Grundlagen &middot; 2 Commanding Heights</td></tr>
+    <tr><td><b>Tag 2</b></td><td>Zahlen &amp; Geld (rechnen üben!)</td><td>3 Ökonomie/Economic Profit &middot; 4 Finanzpsychologie/Geldschöpfung</td></tr>
+    <tr><td><b>Tag 3</b></td><td>Mensch in Organisation</td><td>5 Entscheidung/Heuristiken &middot; 6 Führung &middot; 7 Personalauswahl</td></tr>
+    <tr><td><b>Tag 4</b></td><td>Gesellschaft, Fälle, Wiederholung</td><td>8 Gesellschaft &middot; 9 Fallstudien &middot; 10 Zeitung &middot; 11 Klausurtraining</td></tr>
+  </table>
+
+  <div class="callout exam"><b>Klausur-Schwerpunkte laut deiner Vorgabe:</b> Commanding Heights (Hayek/Keynes/Friedman, Battle of Ideas), Economic Profit berechnen, Strategic Control Map, Buchgeld-/Geldschöpfungsprozess, Geschäftsmodell Aldi &amp; Lidl (3 Kriterien + Value Proposition), Theranos, Heuristiken (Verfügbarkeit, Overconfidence, Repräsentativität), prognostische Validität, Arbeitslosigkeit &amp; Lebenszufriedenheit, transaktionale/transformationale Führung, Konstruktivismus-Techniken, Personalauswahl, kritische Stellungnahme zu Aussagen, Zeitungsartikel-Bezug.</div>
+
+  <div class="mark-done">
+    <input type="checkbox" class="donebox" data-id="start" onclick="markDone('start',this)" id="d-start">
+    <label for="d-start">Diese Seite gelesen</label>
+  </div>
+</section>
+
+<!-- ================= GRUNDLAGEN ================= -->
+<section class="block" id="grundlagen">
+  <div class="kicker">Block 1 &middot; Vorlesung Einführung + Wissenschaftstheorie</div>
+  <h1 class="page">Grundlagen &amp; wissenschaftliches Denken</h1>
+  <p class="lead">Bevor es um Inhalte geht: Wie „funktioniert“ Wissenschaft, welche Arten von Aussagen gibt es, und wie konstruieren Menschen und Medien „Realität“? Das brauchst du, um in der Klausur <b>kritisch Stellung zu nehmen</b>.</p>
+
+  <div class="mininav">
+    <a href="#g1">Was ist Wirtschaftspsychologie</a><a href="#g2">Paradigma</a><a href="#g3">Typologien von Aussagen</a><a href="#g4">Konstruktivismus-Techniken</a><a href="#g5">Kritisch Stellung nehmen</a><a href="#g6">Übungsfragen</a>
+  </div>
+
+  <h2 id="g1">Was ist Wirtschaftspsychologie?</h2>
+  <p>Wirtschaftspsychologie verbindet <b>Ökonomie</b> (wie Märkte, Unternehmen, Geld funktionieren) mit <b>Psychologie</b> (wie Menschen tatsächlich wahrnehmen, entscheiden und handeln). Sie untersucht drei Ebenen, die in der Vorlesung immer wieder auftauchen:</p>
+  <div class="grid2">
+    <div class="def"><b>Ökonomie</b> &ndash; Makroebene: Konjunktur, Arbeitslosigkeit, Geldsystem, Globalisierung.</div>
+    <div class="def"><b>Organisation</b> &ndash; Mesoebene: Kultur, Führung, Wandel, Wissensmanagement.</div>
+    <div class="def"><b>Individuum</b> &ndash; Mikroebene: Wahrnehmung, Entscheidung, Motivation, Persönlichkeit.</div>
+    <div class="def"><b>Klammer:</b> „Wert­orientierung“ &ndash; ökonomischer Wert (z.&nbsp;B. Economic Profit) und gesellschaftliche Werte (Verantwortung, Nachhaltigkeit).</div>
+  </div>
+
+  <h2 id="g2">Wissenschaftsparadigma</h2>
+  <div class="def">Ein <b>Paradigma</b> ist ein zusammenhängendes, von vielen Wissenschaftlern geteiltes „Bündel“ aus theoretischen Leitsätzen, Fragestellungen, Modellen und Methoden, das längere historische Perioden in der Entwicklung einer Disziplin überdauert. (nach Kuhn)</div>
+  <p>Wichtig für die Klausur ist der Gegensatz zweier Paradigmen:</p>
+  <table class="compare">
+    <tr><th>Positivismus / „Traditional Science“</th><th>Konstruktivismus</th></tr>
+    <tr><td>Es gibt eine objektive Realität, die man wertfrei messen und durch <b>Falsifikation</b> von Hypothesen erkennen kann.</td><td>„Realität“ (v.&nbsp;a. soziale Realität) wird durch Sprache, Wahrnehmung und Interaktion <b>aktiv hergestellt</b> &ndash; sie ist nicht einfach „da“.</td></tr>
+    <tr><td>Naturwissenschaftliches Vorbild, Experiment, Objektivität.</td><td>Erklärt z.&nbsp;B. Gender, Marken, „Einhörner“, Management-Moden.</td></tr>
+  </table>
+  <p class="src">Modelle sind vereinfachte Abbildungen der Wirklichkeit: ikonische Modelle (Globus, Modelleisenbahn) vs. sprachlich-semantische Modelle (Modell des Marktverhaltens). Theorie = sprachliches Gebilde aus systematisch verbundenen Gesetzmäßigkeiten (nomologische Hypothesen), geprüft über Falsifikation (Hempel-Oppenheim-Schema).</p>
+
+  <h2 id="g3">Typologien von Aussagen</h2>
+  <p>Eine echte Lieblingsfrage: Um welche Art von Aussage handelt es sich? Das ist die Grundlage jeder <b>kritischen Stellungnahme</b>.</p>
+  <table class="compare">
+    <tr><th>Art</th><th>Bedeutung</th><th>Beispiel</th></tr>
+    <tr><td><b>Deskriptiv</b></td><td>beschreibend/abbildend, erhebt Anspruch auf Wertfreiheit, zeigt den <b>Ist-Zustand</b>.</td><td>„Die Arbeitslosenquote lag 2024 bei 6&nbsp;%.“</td></tr>
+    <tr><td><b>Explikativ</b></td><td>erklärend; braucht Gesetzmäßigkeiten (nomologische Hypothesen), verbunden in einer Theorie.</td><td>„Steigende Zinsen senken die Investitionen, weil Kredite teurer werden.“</td></tr>
+    <tr><td><b>Normativ</b></td><td>Begründung, die sich auf <b>Normen</b> (gesellschaftliche Regeln) stützt.</td><td>„Man soll ehrlich Steuern zahlen.“</td></tr>
+    <tr><td><b>Präskriptiv</b></td><td>fordert einen <b>Soll-Zustand</b>: „so soll es sein, so ist es richtig“.</td><td>„Der Staat sollte ein Grundeinkommen einführen.“</td></tr>
+  </table>
+  <div class="callout tip"><b>Merktrick:</b> deskriptiv = <i>wie es ist</i>, explikativ = <i>warum es so ist</i>, normativ = <i>welche Regel gilt</i>, präskriptiv = <i>wie es sein soll</i>.</div>
+
+  <h2 id="g4">Konstruktivismus-Techniken zur Konstruktion sozialer Realität</h2>
+  <p>Diese Techniken erklären, wie Kommunikation (Medien, Politik, Unternehmensführung, PR) Wahrnehmung steuert. Klausur-relevant als eigenständige Frage <b>und</b> als Werkzeug, um Zeitungsartikel/Aussagen zu analysieren.</p>
+  <div class="grid2">
+    <div class="def"><b>Framing</b> &ndash; emotional/normativ besetzte, meist unbewusste Basisvorstellungen bilden den „Rahmen“, in dem ein Thema wahrgenommen wird.</div>
+    <div class="def"><b>Agenda Setting</b> &ndash; Thematisierung und Themenstrukturierung: was überhaupt zum Thema gemacht wird (intern = Führung, extern = PR).</div>
+    <div class="def"><b>Fragmenting</b> &ndash; Herausgreifen und Überakzentuieren eines Teilaspekts, so dass ein verzerrtes Gesamtbild entsteht.</div>
+    <div class="def"><b>Playing it (both) multiple ways</b> &ndash; derselbe Sachverhalt (z.&nbsp;B. Entlassungen) wird verschiedenen Gruppen unterschiedlich dargestellt (Betriebsrat vs. Aktionäre).</div>
+    <div class="def"><b>Group Think</b> &ndash; kompetente Personen treffen schlechtere Entscheidungen, weil jede ihre Meinung der erwarteten Gruppenmeinung anpasst.</div>
+    <div class="def"><b>Confirmation Bias</b> &ndash; Informationen werden so gesucht/interpretiert, dass sie die eigenen Erwartungen bestätigen; Gegenteiliges wird ausgeblendet.</div>
+  </div>
+
+  <h2 id="g5">Wie nehme ich „kritisch Stellung“ zu einer Aussage?</h2>
+  <p>Ein Schema, das in der Klausur fast immer passt:</p>
+  <ol>
+    <li><b>Einordnen:</b> Welche Art von Aussage ist das (deskriptiv/explikativ/normativ/präskriptiv)? Wer sagt es, mit welchem Interesse?</li>
+    <li><b>Prüfen:</b> Stimmt der Sachgehalt? Welche Annahmen/Modelle stecken dahinter? Ist es empirisch belegt oder eine Wertung?</li>
+    <li><b>Perspektiven:</b> Wer profitiert, wer nicht? Welche Technik (Framing, Fragmenting…) wird evtl. genutzt?</li>
+    <li><b>Bezug herstellen:</b> Verknüpfe mit Vorlesungskonzepten (Heuristiken, Battle of Ideas, Geschäftsmodell…).</li>
+    <li><b>Eigenes, begründetes Urteil:</b> Position beziehen, aber mit Argument &ndash; nicht nur Meinung.</li>
+  </ol>
+
+  <h2 id="g6">Übungsfragen</h2>
+  <div class="quiz">
+    <div class="q"><div class="qtext">1. Ordne ein: „Die Notenbank sollte die Zinsen senken.“</div>
+      <div class="ans"><b>Präskriptiv</b> (fordert einen Soll-Zustand, „sollte“). Kein Faktum, sondern eine Handlungsforderung &ndash; kritisch: auf welcher Norm/welchem Ziel beruht das (z.&nbsp;B. Wachstum vs. Preisstabilität)?</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">2. Erkläre „Framing“ an einem eigenen Beispiel.</div>
+      <div class="ans">Framing setzt den Deutungsrahmen. Beispiel: „Steuererleichterung“ (positiv gerahmt) vs. „Einnahmeausfall für Schulen“ (negativ gerahmt) &ndash; derselbe Sachverhalt, andere emotionale Basisvorstellung, andere Bewertung.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">3. Warum ist die Unterscheidung Positivismus vs. Konstruktivismus für Wirtschaftspsychologie wichtig?</div>
+      <div class="ans">Weil viele wirtschaftliche „Fakten“ (Markenwert, Vertrauen, „Einhorn-Startups“, Erwartungen an Theranos) sozial konstruiert sind. Wer nur positivistisch misst, übersieht, dass Wahrnehmung und Kommunikation die Realität mitgestalten &ndash; genau das nutzen Framing, Agenda Setting etc.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+  </div>
+
+  <div class="mark-done">
+    <input type="checkbox" class="donebox" data-id="grundlagen" onclick="markDone('grundlagen',this)" id="d-grundlagen">
+    <label for="d-grundlagen">Block 1 gelernt</label>
+  </div>
+  <p class="src">Quellen: Vorlesung „Rahmenbedingungen/Grundlagen“ &amp; „Techniken zur Konstruktion sozialer Realität“; Fichter et&nbsp;al., Methodischer Rahmen der Wirtschaftspsychologie.</p>
+</section>
+<!-- ================= FICHTER METHODEN ================= -->
+<section class="block" id="fichter">
+  <div class="kicker">Block 1b &middot; Lehrbuch Fichter (ca. 30&nbsp;% der Klausur!)</div>
+  <h1 class="page">Fichter: Methodischer Rahmen der Wirtschaftspsychologie</h1>
+  <p class="lead">Das Lehrbuch von Christian Fichter (Hrsg., <i>Wirtschaftspsychologie für Bachelor</i>, Springer 2018) ist laut dir ~30&nbsp;% der Klausur. Das Kapitel „Methodischer Rahmen“ ist das wichtigste eigenständige Fichter-Thema: Wie entsteht wissenschaftliches Wissen? Die inhaltlichen Fichter-Kapitel (Konstruktivismus, Finanzpsychologie, Personalauswahl) findest du in den jeweiligen Blöcken.</p>
+
+  <div class="mininav">
+    <a href="#fi1">Forschungsprozess</a><a href="#fi2">Hypothesen</a><a href="#fi3">Variablen &amp; Operationalisierung</a><a href="#fi4">Quantitativ vs. qualitativ</a><a href="#fi5">Gütekriterien</a><a href="#fi6">Signifikanz &amp; Effektstärke</a><a href="#fi7">Experiment</a><a href="#fi8">Wo Fichter überall steckt</a><a href="#fi9">Übungsfragen</a>
+  </div>
+
+  <h2 id="fi1">Der Forschungsprozess</h2>
+  <p>Wissenschaftliches Wissen gewinnt man nicht „im Lehnstuhl“, sondern mit <b>empirischen Methoden</b> (Experiment, Beobachtung, Befragung, Interview). Der typische Ablauf:</p>
+  <table class="compare">
+    <tr><th>Schritt</th><th>Was passiert</th></tr>
+    <tr><td>1. Themenfindung</td><td>Meist eine Beobachtung aus der Praxis (z.&nbsp;B. „Mitarbeiter sind unkonzentriert“).</td></tr>
+    <tr><td>2. Fragestellung</td><td>Präzise, untersuchbare Frage formulieren.</td></tr>
+    <tr><td>3. Hypothesen ableiten</td><td>Prüfbare Vermutungen über Zusammenhänge aufstellen.</td></tr>
+    <tr><td>4. Operationalisierung</td><td>Variablen messbar machen.</td></tr>
+    <tr><td>5. Datenerhebung</td><td>Stichprobe untersuchen (Befragung, Experiment, Beobachtung).</td></tr>
+    <tr><td>6. Auswertung</td><td>Statistische Analyse (z.&nbsp;B. Korrelation, Signifikanztest).</td></tr>
+    <tr><td>7. Interpretation</td><td>Ergebnis deuten, Generalisierbarkeit &amp; Alternativerklärungen prüfen.</td></tr>
+  </table>
+
+  <h2 id="fi2">Hypothesen</h2>
+  <div class="def"><b>Hypothese</b> = eine begründete, <b>prüfbare</b> (falsifizierbare) Vermutung über einen Zusammenhang zwischen Variablen. Beispiel: „Je mehr E-Mail-Benachrichtigungen, desto geringer die Arbeitszufriedenheit.“ Man formuliert statistisch prüfbare Hypothesen (H1) gegen die Nullhypothese (H0 = kein Effekt).</div>
+
+  <h2 id="fi3">Variablen &amp; Operationalisierung</h2>
+  <p>Eine <b>Variable</b> ist ein Merkmal, das verschiedene Ausprägungen annehmen kann (physisch z.&nbsp;B. Körpergröße; psychologisch z.&nbsp;B. Konzentration, gemessen über Anzahl richtig gelöster Aufgaben).</p>
+  <div class="def"><b>Operationalisierung</b> = die in den Hypothesen enthaltenen Größen (Variablen) <b>messbar machen</b>. Man legt fest, wie ein abstraktes Konstrukt (z.&nbsp;B. „Zufriedenheit“) konkret erhoben wird (z.&nbsp;B. Skala „Wie zufrieden sind Sie mit Ihrem Arbeitstag?“).</div>
+
+  <h2 id="fi4">Quantitativ vs. qualitativ</h2>
+  <table class="compare">
+    <tr><th>Quantitative Forschung</th><th>Qualitative Forschung</th></tr>
+    <tr><td>Untersucht Verhalten mit Zahlen: Fragebögen, Experimente, standardisierte Beobachtung; Auswertung mit <b>Statistik</b>.</td><td>Untersucht Verhalten offen &amp; tiefgehend: Interviews, offene Beobachtung; Auswertung interpretativ.</td></tr>
+    <tr><td>Vor allem zur <b>Prüfung</b> von Hypothesen.</td><td>Vor allem zur <b>Generierung</b> von Hypothesen (die man dann quantitativ prüft).</td></tr>
+  </table>
+  <p class="src">Beide sind keine Konkurrenten, sondern ergänzen sich.</p>
+
+  <h2 id="fi5">Gütekriterien quantitativer Forschung</h2>
+  <div class="grid2">
+    <div class="def"><b>Objektivität</b> &ndash; das Ergebnis ist unabhängig von der durchführenden Person.</div>
+    <div class="def"><b>Reliabilität</b> (Zuverlässigkeit) &ndash; eine Wiederholung ergibt dasselbe Ergebnis.</div>
+    <div class="def"><b>Validität</b> (Gültigkeit) &ndash; es wird wirklich das gemessen, was gemessen werden soll.</div>
+    <div class="def"><b>Zusammenhang:</b> gleiche Logik wie bei der Personalauswahl (<a data-goto="personal">Block 7</a>) &ndash; Objektivität → Reliabilität → Validität.</div>
+  </div>
+
+  <h2 id="fi6">Signifikanz &amp; Effektstärke</h2>
+  <div class="def"><b>Statistische Signifikanz:</b> Ein Ergebnis gilt als signifikant, wenn mit mindestens <b>95&nbsp;% Wahrscheinlichkeit</b> (Irrtumswahrscheinlichkeit <b>p ≤ 5&nbsp;%</b>) ausgeschlossen werden kann, dass es bloß zufällig zustande kam. Hängt ab von der Größe des Unterschieds, der Streuung <b>und der Stichprobengröße</b>.</div>
+  <div class="callout exam"><b>Klausur-Klassiker:</b> <b>Signifikanz ≠ Bedeutsamkeit.</b> Bei sehr großen Stichproben werden auch winzige, praktisch unwichtige Unterschiede signifikant. Deshalb gibt man zusätzlich die <b>Effektstärke</b> (Cohen 1992) an &ndash; sie zeigt, ob ein Effekt nicht nur nicht-zufällig, sondern auch <b>bedeutsam groß</b> ist.</div>
+
+  <h2 id="fi7">Das Experiment</h2>
+  <div class="def">Beim <b>Experiment</b> führt der Versuchsleiter absichtlich eine Veränderung herbei, um deren Konsequenzen zu untersuchen. Die herbeigeführte Veränderung = <b>unabhängige Variable (UV)</b>, die gemessene Konsequenz = <b>abhängige Variable (AV)</b>.</div>
+  <p>Nur das Experiment kann <b>kausale</b> Zusammenhänge zweifelsfrei nachweisen. Wichtig dafür: <b>Randomisierung</b> = zufällige Zuordnung der Versuchspersonen zu Experimental- und Kontrollgruppe (kontrolliert Störvariablen).</p>
+  <div class="callout tip"><b>Merke:</b> <b>Korrelation ≠ Kausalität.</b> Ein Zusammenhang (Korrelation) allein sagt nicht, was Ursache und was Wirkung ist &ndash; es könnte eine dritte Variable geben. Kausalaussagen erlaubt nur das kontrollierte Experiment.</div>
+
+  <h2 id="fi8">Wo Fichter im Kurs überall auftaucht</h2>
+  <table class="compare">
+    <tr><th>Fichter-Kapitel</th><th>In welchem Block</th></tr>
+    <tr><td>Methodischer Rahmen (Forschung, Statistik)</td><td>hier, Block 1b</td></tr>
+    <tr><td>Kap. 6 / 6.11 Konstruktivismus</td><td><a data-goto="grundlagen">Block 1</a> (Framing, Agenda Setting …)</td></tr>
+    <tr><td>Kapitel Finanzpsychologie</td><td><a data-goto="finanz">Block 4</a> (Geld, Heuristiken)</td></tr>
+    <tr><td>Kapitel Personalauswahlverfahren (Abschnitt 9)</td><td><a data-goto="personal">Block 7</a> (Validität, Schmidt &amp; Hunter)</td></tr>
+    <tr><td>Bezug im Fall Theranos</td><td><a data-goto="fallstudien">Block 9</a></td></tr>
+  </table>
+
+  <h2 id="fi9">Übungsfragen</h2>
+  <div class="quiz">
+    <div class="q"><div class="qtext">1. Was bedeutet „Operationalisierung“?</div>
+      <div class="ans">Ein abstraktes Konstrukt (Variable) messbar machen &ndash; also festlegen, wie es konkret erhoben wird (z.&nbsp;B. „Zufriedenheit“ über eine Skala von 1&ndash;10).</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">2. Ein Ergebnis ist signifikant (p = 0,01). Heißt das, der Effekt ist praktisch bedeutsam?</div>
+      <div class="ans">Nein. Signifikanz sagt nur, dass der Effekt wahrscheinlich nicht zufällig ist. Ob er groß/bedeutsam ist, zeigt die <b>Effektstärke</b>. Bei großen Stichproben werden auch kleine Effekte signifikant.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">3. Was ist die UV und was die AV in einem Experiment?</div>
+      <div class="ans">UV (unabhängige Variable) = die vom Versuchsleiter herbeigeführte Veränderung. AV (abhängige Variable) = die gemessene Konsequenz. Nur das Experiment erlaubt Kausalaussagen (dank Randomisierung).</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">4. Wozu dient qualitative Forschung meist &ndash; und wozu quantitative?</div>
+      <div class="ans">Qualitative Forschung <b>generiert</b> Hypothesen (offen, tiefgehend, Interviews). Quantitative Forschung <b>prüft</b> Hypothesen mit Zahlen und Statistik.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">5. Warum reicht eine Korrelation nicht für eine Ursache-Wirkungs-Aussage?</div>
+      <div class="ans">Weil Korrelation nur einen Zusammenhang zeigt, nicht die Richtung; es kann eine dritte (Stör-)Variable geben. Kausalität weist nur das kontrollierte Experiment nach.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+  </div>
+
+  <div class="mark-done">
+    <input type="checkbox" class="donebox" data-id="fichter" onclick="markDone('fichter',this)" id="d-fichter">
+    <label for="d-fichter">Block 1b (Fichter) gelernt</label>
+  </div>
+  <p class="src">Quelle: C. Fichter, S. Ryf &amp; J. Basel: „Methodischer Rahmen der Wirtschaftspsychologie“, in: C. Fichter (Hrsg.), Wirtschaftspsychologie für Bachelor, Springer 2018.</p>
+</section>
+
+<!-- ================= COMMANDING HEIGHTS ================= -->
+<section class="block" id="commanding">
+  <div class="kicker">Block 2 &middot; Seminar 1 (klausurrelevant!) + Vorlesung</div>
+  <h1 class="page">Commanding Heights &ndash; The Battle of Ideas</h1>
+  <p class="lead">Der Kern: Zwei Ökonomen streiten ein Jahrhundert lang um die Frage „Wer steuert die Wirtschaft &ndash; der Staat oder der Markt?“. Die Seminar-1-Fragen sind laut Aufgabenblatt <b>klausurrelevant</b>. Lern sie richtig.</p>
+
+  <div class="mininav">
+    <a href="#c1">Der Grundstreit</a><a href="#c2">Keynes vs. Hayek</a><a href="#c3">Friedman</a><a href="#c4">Bretton Woods</a><a href="#c5">Institutionen</a><a href="#c6">Klausurfragen + Lösungen</a>
+  </div>
+
+  <h2 id="c1">Worum geht es? „The Commanding Heights“</h2>
+  <p>Der Begriff „commanding heights“ stammt von Lenin: die <b>Schlüsselbereiche</b> einer Volkswirtschaft (Energie, Verkehr, Schwerindustrie, Finanzsystem). Die Doku-Reihe fragt: Sollen diese vom <b>Staat</b> kontrolliert werden (Planung) oder vom <b>Markt</b> (Preise, Wettbewerb)? Das ist der „Battle of Ideas“ des 20. Jahrhunderts.</p>
+
+  <h2 id="c2">Keynes vs. Hayek &ndash; die zwei Kernpositionen</h2>
+  <table class="compare">
+    <tr><th></th><th>John Maynard Keynes</th><th>Friedrich August von Hayek</th></tr>
+    <tr><td><b>Kernaussage</b></td><td>Märkte sind instabil und können in Krisen stecken bleiben (Massenarbeitslosigkeit). Der <b>Staat</b> muss antizyklisch eingreifen und die Nachfrage stützen.</td><td>Märkte koordinieren Wissen besser als jede Zentrale. Staatliche Planung führt zu Unfreiheit und Fehlsteuerung („Der Weg zur Knechtschaft“). <b>Markt &amp; Preise</b> steuern.</td></tr>
+    <tr><td><b>Rolle des Staates</b></td><td>Aktiv: Fiskalpolitik, Staatsausgaben, Nachfrage­steuerung („deficit spending“).</td><td>Minimal: Rahmen setzen, sonst Markt machen lassen.</td></tr>
+    <tr><td><b>School / Uni</b></td><td><b>Cambridge</b> (UK); Keynesianismus, später „Saltwater“-Ökonomen.</td><td><b>Österreichische Schule</b>; über LSE nach <b>Chicago</b> (Chicago School).</td></tr>
+    <tr><td><b>Krisenrezept</b></td><td>In der Depression Nachfrage ankurbeln.</td><td>Markt bereinigt selbst; Eingriffe verlängern die Krise.</td></tr>
+    <tr><td><b>Finanzsystem</b></td><td>Muss reguliert/gestützt werden; Erwartungen &amp; „animal spirits“ sind zentral, der Staat stabilisiert.</td><td>Freie Kapitalmärkte als Informationssystem; staatliche Eingriffe verzerren Preissignale.</td></tr>
+  </table>
+  <div class="callout"><b>Makroökonomische Kenngrößen durch Keynes:</b> Keynes prägte die Gesamtrechnung der Volkswirtschaft &ndash; <b>BIP/Volkseinkommen, gesamtwirtschaftliche Nachfrage, Konsum, Investition, Sparen, Beschäftigung/Arbeitslosigkeit</b> als steuerbare Aggregate. Erst dadurch wurde Konjunkturpolitik „messbar“.</div>
+  <p><b>Heute diskutierte Größen</b> (Frage d): neben BIP zunehmend <b>Lebenszufriedenheit/Wohlbefinden, Ungleichheit (Piketty), Nachhaltigkeit/CO₂, Bildung/Humankapital, Vertrauen</b> &ndash; also auch psychologische und soziale Kenngrößen.</p>
+
+  <h2 id="c3">Milton Friedman &ndash; die dritte Figur</h2>
+  <p><b>Milton Friedman</b> (1912&ndash;2006, Chicago School, Nobelpreis) radikalisierte Hayeks Linie: <b>Monetarismus</b> (die Geldmenge steuert Inflation, nicht Feinsteuerung durch den Staat) und <b>Marktvertrauen</b>. Sein <i>Capitalism and Freedom</i> (1962) schlug die <b>negative Einkommensteuer</b> vor &ndash; eine schlanke Alternative zum Wohlfahrtsstaat und geistiger Vorläufer des bedingungslosen Grundeinkommens (siehe <a data-goto="gesellschaft">Block 8, UBI</a>). Friedman lieferte die Ideen für die marktliberale Wende ab ca. 1980 (Thatcher, Reagan).</p>
+
+  <h2 id="c4">Bretton Woods und der „Battle of Ideas“</h2>
+  <div class="def"><b>Bretton Woods (1944):</b> Nachkriegs-Weltwährungssystem mit festen Wechselkursen, an den US-Dollar gekoppelt (Dollar an Gold). Gegründet wurden <b>IWF</b> und <b>Weltbank</b>. Es war ein <b>keynesianisch geprägter Kompromiss</b>: internationale Regeln + staatliche Stabilisierung. Das Ende von Bretton Woods 1971 (Nixon löst die Gold­bindung) leitete die Wende hin zu freieren Märkten (Hayek/Friedman) ein.</div>
+
+  <h2 id="c5">Weltbank, IWF, AIIB &ndash; und die neue Blockbildung</h2>
+  <ul>
+    <li><b>Weltbank:</b> langfristige Entwicklungs­finanzierung/Projekte.</li>
+    <li><b>IWF (IMF):</b> kurzfristige Stabilisierung, Kredite bei Zahlungsbilanzkrisen &ndash; oft mit marktliberalen Auflagen.</li>
+    <li><b>AIIB</b> (Asiatische Infrastruktur­investmentbank): 2016 von China initiiert &ndash; ein <b>Gegengewicht</b> zu den westlich dominierten Institutionen. Zusammen mit der <b>Neuen Seidenstraße (Belt and Road)</b> steht sie für eine neue Blockbildung in der Globalisierung.</li>
+  </ul>
+  <p><b>Was fehlt Entwicklungsländern oft</b> (Frage h): stabile <b>Institutionen</b> &ndash; Rechtssicherheit, funktionierende Verwaltung, Eigentumsrechte, Zugang zu Kapital/Infrastruktur. Ohne diese „Grundlage“ nützen offene Märkte wenig. Viele „Emerging Economies“ folgten übrigens erst der Planungs-/Staatslinie (z.&nbsp;B. Indiens Fünfjahrespläne, Mahalanobis-Modell) und öffneten sich später marktwirtschaftlich.</p>
+
+  <h2 id="c6">Klausurfragen aus Seminar 1 &ndash; mit Musterlösungen</h2>
+  <p class="src">Original-Aufgabe: „Beantworten Sie die Fragen anhand von Commanding Heights Teil 1 (The Battle of Ideas) und Teil 3 (The New Rules of the Game).“</p>
+  <div class="quiz">
+    <div class="q"><div class="qtext">a) Kernaussagen von Keynes bzw. Hayek?</div>
+      <div class="ans">Keynes: Märkte sind instabil, der Staat muss die Nachfrage stabilisieren. Hayek: Der Markt koordiniert verstreutes Wissen über Preise besser als jede Planung; staatliche Lenkung gefährdet Freiheit und Effizienz. (Details siehe Tabelle oben.)</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">b) Welche Universitäten/Schools sind assoziiert?</div>
+      <div class="ans">Keynes &ndash; <b>Cambridge</b> (Keynesianismus). Hayek &ndash; <b>Österreichische Schule</b>, über die <b>LSE</b> zur <b>Chicago School</b> (mit Friedman).</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">c) Welche makroökonomischen Kenngrößen führte Keynes ein?</div>
+      <div class="ans">Die volkswirtschaftlichen Aggregate: BIP/Volkseinkommen, gesamtwirtschaftliche Nachfrage, Konsum, Investition, Sparen, Beschäftigung/Arbeitslosigkeit &ndash; die Basis staatlicher Konjunktursteuerung.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">e) Rolle des Finanzsystems: Keynes vs. Hayek?</div>
+      <div class="ans">Keynes: Finanzmärkte sind von Erwartungen/„animal spirits“ getrieben und instabil &ndash; der Staat muss regulieren und stabilisieren. Hayek: Freie Kapitalmärkte sind ein Informationssystem; Eingriffe verzerren die Preissignale.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">f) Was bedeutete Bretton Woods im „Battle of Ideas“?</div>
+      <div class="ans">Der keynesianisch geprägte Nachkriegskompromiss: feste Wechselkurse, Dollar-Gold-Bindung, Gründung von IWF und Weltbank. Sein Ende 1971 markierte den Übergang zur markt­liberalen (Hayek/Friedman) Phase.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">i) Woran zeigt sich, dass der Battle of Ideas nicht abgeschlossen ist?</div>
+      <div class="ans">Aktuelle Streitpunkte: Staatseingriffe in Krisen (Finanzkrise 2008, Corona, Energie), Industriepolitik vs. Freihandel, Regulierung von Big Tech/KI, Klima­politik, Ungleichheit (Piketty), Populismus/„Fake News“ &ndash; überall geht es weiter um „Staat vs. Markt“.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">j) Gemeinsamkeiten/Unterschiede zur Krise vor ~25 Jahren?</div>
+      <div class="ans">Gemeinsam: Vertrauensverlust, Ruf nach dem Staat, Globalisierungs­zweifel. Unterschied heute: Digitalisierung/KI, geopolitische Blockbildung (China/AIIB/Seidenstraße), Klimakrise und die Rolle sozialer Medien (Fake News), die die öffentliche Meinung schneller formen.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">l) Welche Konzepte aus anderen Veranstaltungen kannst du auf Commanding Heights beziehen?</div>
+      <div class="ans">Konstruktivismus/Framing (wie Ideen „verkauft“ werden), Heuristiken &amp; Herdenverhalten an Finanzmärkten, Geschäftsmodell-/Wertdiskussion (Verantwortung), AGIL-Modell (Gesellschaft als System), Attribution (Ursachenzuschreibung bei Arbeitslosigkeit).</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">m/n) Rolle von Weltbank, IWF, AIIB und der Neuen Seidenstraße?</div>
+      <div class="ans">Weltbank = Entwicklungsprojekte, IWF = Krisenkredite mit Auflagen (beide westlich geprägt, Bretton-Woods-Erbe). AIIB + Belt and Road = chinesisch geführtes Gegengewicht → neue Blockbildung und Verschiebung der globalen Ordnung.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+  </div>
+
+  <div class="mark-done">
+    <input type="checkbox" class="donebox" data-id="commanding" onclick="markDone('commanding',this)" id="d-commanding">
+    <label for="d-commanding">Block 2 gelernt</label>
+  </div>
+  <p class="src">Quellen: Seminar 1 „Commanding Heights“ (klausurrelevante Aufgabenstellung); Vorlesung Grundlagen/Modelle; UBI-Seminar (Friedman, negative Einkommensteuer).</p>
+</section>
+<!-- ================= ÖKONOMIE & WERT ================= -->
+<section class="block" id="oekonomie">
+  <div class="kicker">Block 3 &middot; Vorlesung Organisation &amp; Wertorientierung + Geschäftsmodell-Seminar</div>
+  <h1 class="page">Ökonomie &amp; Wertorientierung</h1>
+  <p class="lead">Hier wird gerechnet. Economic Profit ist ein sehr wahrscheinlicher Rechenteil. Dazu Strategic Control Map und das Geschäftsmodell von Aldi/Lidl (3 Kriterien + Value Proposition).</p>
+
+  <div class="mininav">
+    <a href="#o1">WACC</a><a href="#o2">Economic Profit</a><a href="#o3">Rechenbeispiel</a><a href="#o4">EP-Logik</a><a href="#o5">Strategic Control Map</a><a href="#o6">Geschäftsmodell</a><a href="#o7">Aldi &amp; Lidl</a><a href="#o8">Übungsfragen</a>
+  </div>
+
+  <h2 id="o1">Schritt 1: WACC (gewichtete Kapitalkosten)</h2>
+  <div class="def"><b>WACC</b> = Weighted Average Cost of Capital = der Durchschnittszins, den ein Unternehmen für sein gesamtes Kapital (Fremd- + Eigenkapital) zahlen muss. Er ist der „Mindestertrag“, den das Kapital verdienen muss.</div>
+  <div class="calc">WACC = (E / (D+E)) &times; C<sub>E</sub> &nbsp; + &nbsp; (D / (D+E)) &times; C<sub>D</sub>
+<br><br>E = Eigenkapital (Equity), D = Fremdkapital (Debt)
+<br>C<sub>E</sub> = Eigenkapitalkosten, C<sub>D</sub> = Fremdkapitalkosten (nach Steuern)</div>
+  <p><b>Kleines Beispiel:</b> 60&nbsp;% EK zu 5&nbsp;%, 40&nbsp;% FK zu 2&nbsp;%:</p>
+  <div class="calc">WACC = 0,60 &times; 5% + 0,40 &times; 2% = 3,0% + 0,8% = <span class="r">3,8%</span></div>
+
+  <h2 id="o2">Schritt 2: Economic Profit</h2>
+  <div class="def"><b>Economic Profit (EP)</b> = der Gewinn <b>nach</b> Abzug der Kosten für <u>alles</u> eingesetzte Kapital (auch Eigenkapital). Anders als der Buchgewinn zieht EP auch die Verzinsung ab, die die Eigenkapitalgeber erwarten. Nur ein positiver EP schafft echten Wert.</div>
+  <div class="calc">Economic Profit = Betriebsergebnis &minus; (WACC &times; Investiertes Kapital)
+<br><br>gleichwertig: EP = (ROIC &minus; WACC) &times; Investiertes Kapital
+<br>ROIC = Betriebsergebnis / Investiertes Kapital</div>
+
+  <h2 id="o3">Vollständiges Rechenbeispiel (Original-Klausuraufgabe)</h2>
+  <div class="card tight">
+    <b>Gegeben:</b>
+    <ul>
+      <li>Finanzierung: 30&nbsp;% Eigenkapital, 70&nbsp;% Fremdkapital</li>
+      <li>Eigenkapitalkosten 11&nbsp;%, Fremdkapitalkosten 7&nbsp;%</li>
+      <li>Ein Produkt A, Verkaufspreis <b>119&nbsp;€ inkl. 19&nbsp;% USt.</b></li>
+      <li>Absatzmenge: 10 Stück</li>
+      <li>Gesamtkosten: 800&nbsp;€</li>
+      <li>Investitionsbasis (Kapital): 1.000&nbsp;€</li>
+    </ul>
+    <b>Gesucht:</b> Economic Profit für 2019.
+  </div>
+  <div class="calc">1) Nettopreis (ohne USt.): 119 / 1,19 = <span class="r">100 €</span>
+<br>2) Umsatz: 100 &times; 10 = <span class="r">1.000 €</span>
+<br>3) Betriebsergebnis: Umsatz &minus; Kosten = 1.000 &minus; 800 = <span class="r">200 €</span>
+<br>4) WACC: 0,30 &times; 11% + 0,70 &times; 7% = 3,3% + 4,9% = <span class="r">8,2%</span>
+<br>5) Kapitalkosten: 8,2% &times; 1.000 = <span class="r">82 €</span>
+<br>6) <span class="hl">Economic Profit = 200 &minus; 82 = 118 €</span>
+<br><br>Kontrolle über ROIC: ROIC = 200/1.000 = 20%
+<br>EP = (20% &minus; 8,2%) &times; 1.000 = 11,8% &times; 1.000 = <span class="r">118 €</span> ✓</div>
+  <div class="callout tip"><b>Klausur-Falle #1:</b> Immer zuerst die <b>Umsatzsteuer herausrechnen</b> (119/1,19 = 100). Wer mit 119 rechnet, bekommt alles falsch.<br><b>Falle #2:</b> Eigenkapitalkosten <u>nicht</u> vergessen &ndash; genau das unterscheidet Economic Profit vom normalen Gewinn.</div>
+
+  <h2 id="o4">Warum EP so lehrreich ist</h2>
+  <p>Bei <b>gleichem</b> Betriebsergebnis (100&nbsp;€) und WACC (3,8&nbsp;%) hängt der Economic Profit stark vom eingesetzten Kapital ab:</p>
+  <table class="compare">
+    <tr><th>Investiertes Kapital</th><th>ROIC</th><th>Kapitalkosten (3,8&nbsp;%)</th><th>Economic Profit</th></tr>
+    <tr><td>500 €</td><td>20 %</td><td>19 €</td><td class="hl">+81 €</td></tr>
+    <tr><td>1.000 €</td><td>10 %</td><td>38 €</td><td class="hl">+62 €</td></tr>
+    <tr><td>3.000 €</td><td>3,3 %</td><td>114 €</td><td class="hl">&minus;14 €</td></tr>
+  </table>
+  <p><b>Lehre:</b> Kapital ist nicht „gratis“. Wer viel Kapital bindet, um denselben Gewinn zu erzielen, vernichtet Wert (negativer EP). Deshalb ist EP eine bessere Steuerungsgröße als der reine Buchgewinn. (Vgl. Preinreich-Lücke-Theorem: Unternehmenswert = investiertes Kapital + Barwert aller künftigen Economic Profits.)</p>
+
+  <h2 id="o5">Strategic Control Map</h2>
+  <p>Ein Instrument der wertorientierten Steuerung: Es positioniert Unternehmen/Geschäftseinheiten im Wettbewerbsvergleich und dient sowohl <b>retrospektiv</b> (Vergangenheit erklären) als auch <b>prospektiv</b> (Ziele/Wachstum planen). Zielgröße ist der <b>Total Return to Shareholder (TRS)</b>.</p>
+  <div class="def"><b>Achsen:</b> Y = <b>Marktwert / Umsatz</b> (wie hoch bewertet der Markt jeden Umsatz-Euro → Zukunfts­erwartung). X = <b>Umsatz</b> (Größe, in Mrd.&nbsp;USD). Die <b>Blasengröße</b> = absoluter Marktwert.</div>
+  <table class="compare">
+    <tr><th></th><th>niedriger Umsatz</th><th>hoher Umsatz</th></tr>
+    <tr><td><b>hohe Bewertung<br>(Marktwert/Umsatz)</b></td><td><b>Focused Attackers</b><br>Spezialisten mit hohem Zukunftswert, Marktzugang über Intangibles. „Wie überzeuge ich Investoren?“</td><td><b>Industry Shapers</b><br>Große mit hoher Bewertung, Skaleneffekte, prägen die Branche. „Wie erfülle ich die hohen Erwartungen?“</td></tr>
+    <tr><td><b>niedrige Bewertung</b></td><td><b>Second Tier</b><br>klein und gering bewertet.</td><td><b>Integrated Size Players</b><br>groß, aber niedrig bewertet (wenig Fantasie/Wachstum).</td></tr>
+  </table>
+
+  <h2 id="o6">Geschäftsmodell &ndash; die drei Kriterien</h2>
+  <div class="def">Ein <b>Geschäftsmodell</b> ist eine modellhafte Beschreibung eines Geschäfts. Es besteht aus <b>drei Hauptkomponenten</b> (nach Stähler 2001). Wichtig: Ein Geschäftsmodell wird <b>nicht über Produkt/Markt</b> definiert, sondern über den <b>Nutzen</b> (Value Proposition).</div>
+  <table class="compare">
+    <tr><th>Komponente</th><th>Leitfrage</th><th>Inhalt</th></tr>
+    <tr><td><b>1. Value Proposition</b></td><td>Welchen <b>Nutzen</b> stiftet das Unternehmen für Kunden &amp; Partner (Stakeholder)?</td><td>Das Nutzen­versprechen &ndash; der Kern des Modells.</td></tr>
+    <tr><td><b>2. Architektur der Wertschöpfung</b></td><td><b>Wie</b> wird der Nutzen erzeugt und in welcher Konfiguration?</td><td>Wertschöpfungsstufen, beteiligte Akteure und ihre Rollen.</td></tr>
+    <tr><td><b>3. Ertragsmodell</b></td><td><b>Wodurch</b> wird Geld verdient (Einnahmequellen)?</td><td>Erlösquellen; entscheidet über Wert &amp; Nachhaltigkeit des Modells.</td></tr>
+  </table>
+
+  <h2 id="o7">Fallstudie: Geschäftsmodell Aldi &amp; Lidl</h2>
+  <p>Beschreibe beide Discounter entlang der drei Kriterien &ndash; das ist die typische Klausuraufgabe.</p>
+  <table class="compare">
+    <tr><th></th><th>Aldi (Nord/Süd)</th><th>Lidl (Schwarz-Gruppe)</th></tr>
+    <tr><td><b>Value Proposition</b></td><td>Gute, verlässliche Qualität zu <b>dauerhaft niedrigsten Preisen</b>; einfache, schnelle Einkaufs­entscheidung („Aldi-Äquivalenz“: Qualität = Marke).</td><td>Niedrigpreis + etwas breiteres Sortiment/Markenartikel &amp; Aktionen; „Preis-Leistung mit mehr Auswahl“.</td></tr>
+    <tr><td><b>Wertschöpfungs-<br>architektur</b></td><td>Schlankes Sortiment (wenige Artikel, hoher Umschlag), <b>Eigenmarken</b>, enorme Einkaufsmacht, hocheffiziente Logistik, wenig Personal/Filialkosten.</td><td>Ähnlich schlank &amp; effizient; zusätzlich starke Vertikalisierung der <b>Schwarz-Gruppe</b> (eigene Produktion, Logistik, IT/Cloud „Stackit“, Recycling).</td></tr>
+    <tr><td><b>Ertragsmodell</b></td><td><b>Geringe Marge je Artikel &times; sehr hohe Menge/Umschlag</b>; Kostenführerschaft.</td><td>Gleiches Prinzip; zusätzlich neue Erlösquellen im Konzern (Cloud/IT-Dienste, KI-Investitionen z.&nbsp;B. Aleph Alpha).</td></tr>
+  </table>
+  <div class="callout tip"><b>Kernidee:</b> Das Discount-Modell ist eine <b>Kostenführerschaft</b>. Die Value Proposition „günstig + verlässlich“ wird durch eine radikal effiziente Wertschöpfung (Standardisierung, Eigenmarken, Skala) ermöglicht, und das Ertragsmodell lebt von <b>niedriger Marge &times; hoher Menge</b>. So passen alle drei Komponenten zusammen &ndash; genau das sollst du zeigen.</div>
+
+  <h2 id="o8">Übungsfragen</h2>
+  <div class="quiz">
+    <div class="q"><div class="qtext">1. Ein Unternehmen erwirtschaftet 150&nbsp;€ Betriebsergebnis bei 2.000&nbsp;€ Kapital und WACC 6&nbsp;%. Economic Profit?</div>
+      <div class="ans">Kapitalkosten = 6&nbsp;% × 2.000 = 120&nbsp;€. EP = 150 − 120 = <b>+30&nbsp;€</b>. ROIC = 7,5&nbsp;% &gt; WACC 6&nbsp;% → Wert geschaffen.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">2. Warum ist Economic Profit aussagekräftiger als der Buchgewinn?</div>
+      <div class="ans">Weil er auch die <b>Eigenkapitalkosten</b> (erwartete Verzinsung der Eigentümer) abzieht. Ein Unternehmen kann buchhalterisch Gewinn machen, aber trotzdem Wert vernichten, wenn es das gebundene Kapital nicht ausreichend verzinst.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">3. Nenne die drei Komponenten eines Geschäftsmodells und ordne Aldi zu.</div>
+      <div class="ans">Value Proposition (günstig + verlässliche Qualität), Wertschöpfungsarchitektur (schlankes Sortiment, Eigenmarken, Einkaufsmacht, effiziente Logistik), Ertragsmodell (kleine Marge × große Menge).</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">4. Wo in der Strategic Control Map steht ein junges, hoch bewertetes Tech-Startup mit kleinem Umsatz?</div>
+      <div class="ans"><b>Focused Attackers</b>: niedriger Umsatz, aber hohe Marktwert/Umsatz-Bewertung (der Markt preist starke Zukunftserwartungen ein).</div>
+      <button class="reveal">Antwort zeigen</button></div>
+  </div>
+
+  <div class="mark-done">
+    <input type="checkbox" class="donebox" data-id="oekonomie" onclick="markDone('oekonomie',this)" id="d-oekonomie">
+    <label for="d-oekonomie">Block 3 gelernt</label>
+  </div>
+  <p class="src">Quellen: Vorlesung „Organisation und Wertorientierung“ (WACC, Economic-Profit-Dekomposition, Strategic Control Map); Geschäftsmodell-Seminar (Stähler 2001, Aldi/Lidl); onpulson.de „Economic-Profit-Modell“.</p>
+</section>
+<!-- ================= FINANZPSYCHOLOGIE ================= -->
+<section class="block" id="finanz">
+  <div class="kicker">Block 4 &middot; Vorlesung Finanzpsychologie + Seminar Finanzpsychologie</div>
+  <h1 class="page">Finanzpsychologie: Geld, Geldschöpfung &amp; Heuristiken</h1>
+  <p class="lead">Woher kommt Geld eigentlich? Und warum treffen Menschen mit Geld systematisch „falsche“ Entscheidungen? Der Buchgeld-/Geldschöpfungsprozess und die drei Heuristiken sind Klausur-Schwerpunkte.</p>
+
+  <div class="mininav">
+    <a href="#f1">Geldarten</a><a href="#f2">Geldschöpfung</a><a href="#f3">Beispiel Multiplikator</a><a href="#f4">Krypto</a><a href="#f5">Heuristiken</a><a href="#f6">Greater Fool</a><a href="#f7">Nudging</a><a href="#f8">Übungsfragen</a>
+  </div>
+
+  <h2 id="f1">Geldarten: Buchgeld, Fiat-Geld, Zentralbankgeld</h2>
+  <table class="compare">
+    <tr><th>Begriff</th><th>Was ist das?</th></tr>
+    <tr><td><b>Buchgeld (Giralgeld)</b></td><td>Elektronische Guthaben in den Büchern der Banken (Sichtguthaben auf Girokonten). Entsteht v.&nbsp;a., wenn eine <b>Bank einen Kredit gewährt</b> und den Betrag auf das Konto bucht. Basiert auf Vertrauen ins Bankensystem.</td></tr>
+    <tr><td><b>Fiat-Geld</b></td><td>Gesetzliches Zahlungsmittel ohne inneren Wert (keine Gold-/Warendeckung). „fiat“ = lat. „es werde“. Wert beruht auf Vertrauen und rechtlicher Anerkennung. Umfasst Bargeld <b>und</b> Buchgeld.</td></tr>
+    <tr><td><b>Zentralbankgeld</b></td><td>Von der Zentralbank ausgegeben: Bargeld (Münzen/Scheine) + Reserven der Banken. Die Zentralbank steuert Geldmenge und Zinsen.</td></tr>
+  </table>
+  <p><b>Zusammenhang:</b> Buchgeld ist eine <i>Form</i> von Fiat-Geld. Der Großteil der Geldmenge ist Buchgeld, das von <b>Geschäftsbanken</b> geschaffen wird &ndash; nicht von der Zentralbank.</p>
+
+  <h2 id="f2">Wie entsteht Geld? Der Geldschöpfungsprozess</h2>
+  <p>Wir haben ein <b>zweistufiges Bankensystem</b>:</p>
+  <ol>
+    <li><b>Zentralbank</b> schafft <b>Zentralbankgeld</b> (Bargeld + Reserven der Banken).</li>
+    <li><b>Geschäftsbanken</b> schaffen <b>Buchgeld/Giralgeld</b> durch <b>Kreditvergabe</b>.</li>
+  </ol>
+  <div class="def"><b>Giralgeldschöpfung:</b> Vergibt eine Bank einen Kredit, schreibt sie dem Kunden den Betrag einfach als Guthaben gut &ndash; das Geld entsteht „aus dem Nichts“ per Buchung. Es ist <b>nicht</b> das Geld eines anderen Sparers, das weitergereicht wird. Begrenzt wird das durch die <b>Mindestreserve­pflicht</b>, Eigenkapitalvorschriften und die Kreditnachfrage.</div>
+
+  <h2 id="f3">Rechenbeispiel: Geldmengen-Multiplikator</h2>
+  <p>Angenommen, der Mindestreservesatz beträgt <b>10&nbsp;%</b>. Ein Kunde zahlt 1.000&nbsp;€ Bargeld auf sein Konto ein.</p>
+  <div class="calc">Bank A: Einlage 1.000 € → hält 100 € Reserve, verleiht <span class="r">900 €</span>
+<br>Bank B: bekommt 900 € Einlage → hält 90 €, verleiht <span class="r">810 €</span>
+<br>Bank C: bekommt 810 € → hält 81 €, verleiht <span class="r">729 €</span> …
+<br><br>Gesamte Geldmenge = 1.000 &times; (1 / Mindestreservesatz)
+<br>= 1.000 &times; (1 / 0,10) = <span class="hl">10.000 €</span>
+<br><br>Geldschöpfungs-Multiplikator = 1 / 0,10 = <span class="r">10</span></div>
+  <p>Aus 1.000&nbsp;€ Zentralbankgeld werden im System bis zu 10.000&nbsp;€ Buchgeld. Ein <b>niedrigerer</b> Reservesatz → <b>mehr</b> Geldschöpfung. So beeinflusst die Zentralbank indirekt die Geldmenge.</p>
+  <div class="callout tip"><b>Merke:</b> „Wie entsteht Geld?“ → Antwort in 2 Sätzen: <i>Zentralbankgeld</i> schafft die Zentralbank; den weitaus größeren Teil, das <i>Buchgeld</i>, schaffen Geschäftsbanken bei jeder Kreditvergabe. Die Mindestreserve begrenzt, wie viel Buchgeld je Einheit Zentralbankgeld entstehen kann (Multiplikator = 1/Reservesatz).</div>
+
+  <h2 id="f4">Kryptowährungen vs. Zentralbankgeld</h2>
+  <table class="compare">
+    <tr><th></th><th>Kryptowährung</th><th>Zentralbankgeld</th></tr>
+    <tr><td>Kontrolle</td><td>dezentral (Blockchain), keine zentrale Behörde</td><td>zentral, von der Zentralbank reguliert</td></tr>
+    <tr><td>Vertrauen in</td><td>Kryptografie/Technologie</td><td>Staat &amp; Zentralbank</td></tr>
+    <tr><td>Wertstabilität</td><td>hoch volatil</td><td>relativ stabil, steuerbar</td></tr>
+  </table>
+  <p><b>Warum attraktiv für Schwellenländer?</b> (1) <b>Finanzielle Inklusion</b> ohne Bankkonto, (2) <b>Währungsstabilität</b> als Schutz vor Hyperinflation, (3) Umgehung von <b>Kapitalverkehrs­kontrollen</b>, (4) <b>technologische Innovation</b>. Risiken: Volatilität, Regulierung, Sicherheit. (CBDCs = digitale Zentralbank­währungen als staatliche Antwort.)</p>
+
+  <h2 id="f5">Die drei Heuristiken (Klausur-Schwerpunkt!)</h2>
+  <p>Heuristiken sind mentale Abkürzungen &ndash; oft nützlich, aber sie führen zu systematischen Fehlern (Bias), besonders bei Finanzentscheidungen.</p>
+  <div class="grid2">
+    <div class="def"><b>Verfügbarkeitsheuristik</b> &ndash; leicht verfügbare Information wird überbewertet. Was uns schnell einfällt (weil aktuell, emotional, medial präsent), halten wir für wahrscheinlicher. <i>Bsp.:</i> nach einem Börsencrash in den Medien überschätzt man das Crash-Risiko.</div>
+    <div class="def"><b>Overconfidence Bias</b> &ndash; Akteure überschätzen ihre eigene Leistung/ihr Wissen. <i>Bsp.:</i> Anleger glauben, den Markt schlagen zu können, handeln zu viel und verlieren.</div>
+    <div class="def"><b>Repräsentativitätsheuristik</b> &ndash; die Wahrscheinlichkeit eines Ereignisses wird danach beurteilt, wie gut es einem <b>Prototyp</b> entspricht. <i>Bsp.:</i> ein Startup „sieht aus wie ein Einhorn“ → man überschätzt den Erfolg, ignoriert Basisraten (siehe Theranos).</div>
+    <div class="def"><b>Weitere:</b> Ankerheuristik (erste Zahl prägt die Schätzung), Verlustaversion &amp; Endowment-Effekt (Verluste wiegen schwerer als gleich große Gewinne; Besitz wird überbewertet &ndash; Kahneman/Knetsch/Thaler).</div>
+  </div>
+
+  <h2 id="f6">Greater Fool Theory</h2>
+  <div class="def"><b>Greater Fool Theory:</b> Der Preis eines Objekts richtet sich nicht nach seinem inneren Wert, sondern nach der (irrationalen) Erwartung, es später an einen „noch größeren Narren“ teurer weiterverkaufen zu können. Erklärt Blasen an Immobilien-, Aktien- und Kunstmärkten.</div>
+
+  <h2 id="f7">Nudging &amp; Regulierung</h2>
+  <p><b>Nudging</b> = „Anstupsen“: die Entscheidungs­architektur so gestalten, dass Menschen tendenziell die „bessere“ Wahl treffen, ohne Zwang und ohne Optionen zu verbieten. <i>Bsp.:</i> voreingestellte Trinkgeld-Vorschläge auf der Rechnung, Standard-Altersvorsorge, Organspende-Opt-out. Kritik: Wer bestimmt, was „gut“ ist? (Paternalismus-Debatte).</p>
+
+  <h2 id="f8">Übungsfragen</h2>
+  <div class="quiz">
+    <div class="q"><div class="qtext">1. Wer schafft den größten Teil des Geldes &ndash; und wie?</div>
+      <div class="ans">Die <b>Geschäftsbanken</b>, durch <b>Kreditvergabe</b>: Sie buchen dem Kreditnehmer Buchgeld gut, das dabei neu entsteht. Zentralbankgeld (Bargeld + Reserven) ist der kleinere Teil.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">2. Mindestreservesatz 20&nbsp;%, Einlage 500&nbsp;€. Maximale Geldmenge?</div>
+      <div class="ans">Multiplikator = 1/0,20 = 5. Geldmenge = 500 × 5 = <b>2.500&nbsp;€</b>.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">3. Ein Anleger kauft eine Aktie nur, weil ein Freund damit reich wurde und „alle“ jetzt kaufen. Welche Heuristiken?</div>
+      <div class="ans"><b>Verfügbarkeit</b> (das eine Erfolgsbeispiel ist salient) + <b>Repräsentativität</b> (Aktie „wirkt wie“ ein sicherer Gewinner) + evtl. <b>Overconfidence</b>. Nähe zur <b>Greater Fool Theory</b>, wenn er auf Weiterverkauf an andere spekuliert.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">4. Unterschied Buchgeld vs. Fiat-Geld in einem Satz?</div>
+      <div class="ans">Buchgeld ist die digitale Repräsentation von Geld in Bankkonten; Fiat-Geld ist das gesetzliche Zahlungsmittel ohne Warendeckung &ndash; Buchgeld ist eine Form von Fiat-Geld.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+  </div>
+
+  <div class="mark-done">
+    <input type="checkbox" class="donebox" data-id="finanz" onclick="markDone('finanz',this)" id="d-finanz">
+    <label for="d-finanz">Block 4 gelernt</label>
+  </div>
+  <p class="src">Quellen: Vorlesung Kap. 10 Finanzpsychologie (Geld, Heuristiken, Geldschöpfung/Vollgeld); Seminar Finanzpsychologie (Buchgeld/Fiat/Krypto, Greater Fool); Vorlesung 11.3 Regulierung (Nudging).</p>
+</section>
+<!-- ================= ENTSCHEIDUNG ================= -->
+<section class="block" id="entscheidung">
+  <div class="kicker">Block 5 &middot; Vorlesung Entscheidung + Seminar Managerial Decision Making / Dilemma</div>
+  <h1 class="page">Entscheidung, Urteilen &amp; Heuristiken</h1>
+  <p class="lead">Wie treffen Menschen und Manager Entscheidungen &ndash; und warum liegen sie systematisch daneben? Mit den Klausur-Heuristiken, Entrepreneurship und den Fällen Carter Racing und Moral Machine.</p>
+
+  <div class="mininav">
+    <a href="#e1">Rational vs. begrenzt</a><a href="#e2">System 1 / System 2</a><a href="#e3">Heuristiken &amp; Biases</a><a href="#e4">Carter Racing</a><a href="#e5">Moral Machine</a><a href="#e6">Entrepreneurship</a><a href="#e7">Übungsfragen</a>
+  </div>
+
+  <h2 id="e1">Rationalität und ihre Grenzen</h2>
+  <p>Das klassische ökonomische Modell nimmt den <b>Homo oeconomicus</b> an: vollständig informiert, nutzenmaximierend, konsistent. Die Realität ist die <b>begrenzte Rationalität</b> (bounded rationality, Herbert Simon): Menschen haben begrenzte Zeit, Information und Rechenkapazität und nutzen deshalb Heuristiken. Sie „satisficen“ (zufriedenstellend statt optimal).</p>
+
+  <h2 id="e2">Zwei Denksysteme (Kahneman)</h2>
+  <table class="compare">
+    <tr><th>System 1</th><th>System 2</th></tr>
+    <tr><td>schnell, automatisch, intuitiv, emotional, mühelos</td><td>langsam, bewusst, logisch, anstrengend</td></tr>
+    <tr><td>Quelle der meisten Heuristiken &amp; Biases</td><td>kann Fehler korrigieren &ndash; wird aber oft „faul“ nicht aktiviert</td></tr>
+  </table>
+
+  <h2 id="e3">Heuristiken &amp; Verzerrungen (Recap + Ergänzung)</h2>
+  <p>Die drei Klausur-Heuristiken ausführlich in <a data-goto="finanz">Block 4</a>. Kompakt:</p>
+  <ul>
+    <li><b>Verfügbarkeit</b> &ndash; leicht Abrufbares wird überschätzt.</li>
+    <li><b>Repräsentativität</b> &ndash; Beurteilung nach Ähnlichkeit zum Prototyp, Basisraten werden ignoriert.</li>
+    <li><b>Overconfidence</b> &ndash; Selbstüberschätzung.</li>
+    <li><b>Anker</b> &ndash; eine Ausgangszahl verzerrt die Schätzung.</li>
+    <li><b>Verlustaversion / Endowment-Effekt / Status-quo-Bias</b> (Kahneman, Knetsch &amp; Thaler 1991) &ndash; Verluste schmerzen ~doppelt so stark wie gleich große Gewinne; Besitz wird überbewertet; man bleibt beim Bestehenden.</li>
+    <li><b>Confirmation Bias</b> &ndash; man sucht Bestätigung der eigenen Meinung.</li>
+  </ul>
+
+  <h2 id="e4">Fallstudie: Carter Racing</h2>
+  <p>Ein Rennteam muss entscheiden, ob es bei niedriger Temperatur startet. Es gab wiederholt Motorschäden durch defekte Dichtungen. Die vorliegenden Daten wirken uneindeutig &ndash; aber wer <b>alle</b> Fälle (auch die erfolgreichen Rennen) und den Temperatur­zusammenhang betrachtet, erkennt ein klares Risikomuster.</p>
+  <div class="callout exam"><b>Lernpunkt:</b> Klassischer Fall von <b>selektiver Datenbetrachtung</b> und Entscheidung unter Unsicherheit. Man schaut nur auf Ausfälle statt auf die vollständige Verteilung (fehlende „Nenner“ / Basisrate). Analogie zur <b>Challenger-Katastrophe</b> (O-Ring-Dichtungen bei Kälte). Bezug: Framing der Daten, Confirmation Bias, Gruppendruck.</div>
+
+  <h2 id="e5">Fallstudie: Moral Machine (Dilemma)</h2>
+  <p>Das <b>Moral-Machine-Experiment</b> (Awad et&nbsp;al. 2018, MIT) fragte weltweit, wie ein selbstfahrendes Auto in unvermeidbaren Unfällen entscheiden soll (wen verschonen?). Ergebnis: moralische Präferenzen sind <b>kulturell verschieden</b>, es gibt aber Tendenzen (Menschen &gt; Tiere, mehr &gt; weniger Leben, Junge &gt; Alte). Relevanz: Ethik der Automatisierung, keine „objektiv richtige“ Antwort → Wertediskussion, Verantwortung.</p>
+
+  <h2 id="e6">Entrepreneurship (Seminar 8)</h2>
+  <p><b>Entrepreneurship</b> = unternehmerisches Handeln: Chancen erkennen, Ressourcen bündeln, Risiko unter Unsicherheit tragen, Innovationen umsetzen (Schumpeter: „schöpferische Zerstörung“). Psychologisch relevant: Risikobereitschaft, Leistungsmotivation, Selbstwirksamkeit &ndash; aber auch <b>Overconfidence</b> als typische Gefahr von Gründern (Brücke zu Theranos).</p>
+
+  <h2 id="e7">Übungsfragen</h2>
+  <div class="quiz">
+    <div class="q"><div class="qtext">1. Was besagt „bounded rationality“?</div>
+      <div class="ans">Menschen entscheiden nicht vollkommen rational, sondern begrenzt durch Information, Zeit und kognitive Kapazität &ndash; sie nutzen Heuristiken und wählen eine „gut genug“-Lösung (satisficing).</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">2. Welchen Denkfehler zeigt Carter Racing?</div>
+      <div class="ans">Selektive/unvollständige Datenbetrachtung unter Unsicherheit: Man ignoriert die vollständige Verteilung (auch erfolgreiche Fälle) und den Temperaturzusammenhang &ndash; verstärkt durch Confirmation Bias und Gruppendruck.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">3. Warum gibt es im Moral-Machine-Experiment keine „richtige“ Lösung?</div>
+      <div class="ans">Weil es ein echtes moralisches Dilemma ist und die Präferenzen kulturell variieren. Es geht um Werte, nicht um ein berechenbares Optimum &ndash; daher Wertediskussion und Verantwortungsfrage.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+  </div>
+
+  <div class="mark-done">
+    <input type="checkbox" class="donebox" data-id="entscheidung" onclick="markDone('entscheidung',this)" id="d-entscheidung">
+    <label for="d-entscheidung">Block 5 gelernt</label>
+  </div>
+  <p class="src">Quellen: Vorlesung „Entscheidung“; Seminar 8 Managerial Decision Making/Entrepreneurship; Seminar Dilemma; Carter Racing (Brittain &amp; Sitkin); Awad et&nbsp;al. 2018 (Moral Machine); Kahneman/Knetsch/Thaler 1991.</p>
+</section>
+
+<!-- ================= ORGANISATION & FÜHRUNG ================= -->
+<section class="block" id="organisation">
+  <div class="kicker">Block 6 &middot; Vorlesung Kap. 8 Organisation</div>
+  <h1 class="page">Organisation &amp; Führung</h1>
+  <p class="lead">Wie sind Organisationen aufgebaut, wie verändern sie sich, und wie führt man Menschen? Schwerpunkt: transaktionale vs. transformationale Führung.</p>
+
+  <div class="mininav">
+    <a href="#r1">AGIL-Modell</a><a href="#r2">Kultur &amp; Klima</a><a href="#r3">Führungsansätze</a><a href="#r4">Transaktional vs. transformational</a><a href="#r5">Führungsinstrumente</a><a href="#r6">Übungsfragen</a>
+  </div>
+
+  <h2 id="r1">AGIL-Modell (Talcott Parsons)</h2>
+  <p>Grundlage der Systemtheorie: Jedes soziale System (Gesellschaft, Organisation) muss vier Funktionen erfüllen, um zu bestehen:</p>
+  <table class="compare">
+    <tr><th>Buchstabe</th><th>Funktion</th><th>Bedeutung</th></tr>
+    <tr><td><b>A</b></td><td>Adaptation</td><td>Anpassung an die Umwelt, Ressourcen beschaffen (Wirtschaft)</td></tr>
+    <tr><td><b>G</b></td><td>Goal Attainment</td><td>Ziele setzen und erreichen (Politik/Führung)</td></tr>
+    <tr><td><b>I</b></td><td>Integration</td><td>Zusammenhalt, Koordination der Teile (Recht/Normen)</td></tr>
+    <tr><td><b>L</b></td><td>Latency (Latent Pattern Maintenance)</td><td>Werte &amp; Kultur erhalten, Sozialisation</td></tr>
+  </table>
+  <p class="src">Wird u.&nbsp;a. im Seminar auf Henry Ford angewandt (je eine Auswirkung pro AGIL-Kategorie) &ndash; siehe <a data-goto="fallstudien">Fallstudien</a>.</p>
+
+  <h2 id="r2">Organisationskultur &amp; -klima</h2>
+  <p><b>Kultur</b> = gemeinsame, oft unbewusste Werte, Normen und Grundannahmen („wie man hier Dinge tut“). <b>Klima</b> = die aktuell wahrgenommene Stimmung/Atmosphäre. Neue Mitarbeitende durchlaufen <b>Sozialisationsphasen</b>; Organisationen sichern ihre Kultur über Leitbilder und Wissensmanagement. „Structure follows strategy“: die Struktur richtet sich nach der Strategie.</p>
+
+  <h2 id="r3">Führungsansätze im Überblick</h2>
+  <table class="compare">
+    <tr><th>Ansatz</th><th>Grundannahme</th></tr>
+    <tr><td><b>Eigenschaftsorientiert</b></td><td>Stabile Persönlichkeitseigenschaften machen die erfolgreiche Führungskraft aus.</td></tr>
+    <tr><td><b>Verhaltensorientiert</b></td><td>Führungsverhalten ist erlernbar und veränderbar (Führungsstile).</td></tr>
+    <tr><td><b>Situationsorientiert</b></td><td>Der Erfolg hängt von der Situation ab (Aufgabe, Macht, Entscheidungstyp).</td></tr>
+    <tr><td><b>Interaktionsorientiert</b></td><td>Führung entsteht in der Interaktion zwischen Führungskraft und Mitarbeitenden → <b>transaktionale</b> und <b>transformationale</b> Führung.</td></tr>
+  </table>
+
+  <h2 id="r4">Transaktionale vs. transformationale Führung (Schwerpunkt!)</h2>
+  <table class="compare">
+    <tr><th>Transaktionale Führung</th><th>Transformationale Führung</th></tr>
+    <tr><td>Beruht auf <b>Austausch</b>: Leistung gegen Belohnung. „Do ut des“.</td><td>Beruht auf <b>Inspiration &amp; Sinn</b>: Werte, Vision, intrinsische Motivation.</td></tr>
+    <tr><td>Instrumente: leistungsabhängige Belohnung (<i>contingent reward</i>), Führung durch Ausnahme (<i>management by exception</i> &ndash; nur bei Abweichung eingreifen).</td><td>Die <b>4 I</b> (Bass): <b>I</b>dealized Influence (Vorbild/Charisma), <b>I</b>nspirational Motivation (Vision), <b>I</b>ntellectual Stimulation (zum Mitdenken anregen), <b>I</b>ndividualized Consideration (individuelle Förderung).</td></tr>
+    <tr><td>Hält den Status quo, sichert Leistung.</td><td>Verändert Einstellungen, hebt Mitarbeitende „über sich hinaus“, fördert Wandel.</td></tr>
+  </table>
+  <div class="callout tip"><b>Merke:</b> transaktional = <i>Tausch &amp; Kontrolle</i> (Belohnung/Bestrafung), transformational = <i>Transformation &amp; Begeisterung</i> (Vision/Vorbild). In der Praxis ergänzen sie sich (Full-Range-Leadership-Modell): gute Führung nutzt beides.</div>
+
+  <h2 id="r5">Führungsinstrumente</h2>
+  <ul>
+    <li><b>Mitarbeitergespräche</b> &ndash; Aufgaben übergeben/kontrollieren, Beziehung pflegen, motivieren, entwickeln.</li>
+    <li><b>Zielvereinbarung (Management by Objectives)</b> &ndash; gemeinsam Ziele definieren; Ziele nach <b>SMART</b>: Spezifisch, Messbar, Ausführbar/Attraktiv, Relevant, Terminierbar. Gibt Mitarbeitenden Flexibilität und entlastet die Führungskraft.</li>
+  </ul>
+
+  <h2 id="r6">Übungsfragen</h2>
+  <div class="quiz">
+    <div class="q"><div class="qtext">1. Erkläre den Unterschied transaktionale vs. transformationale Führung.</div>
+      <div class="ans">Transaktional = Austausch von Leistung gegen Belohnung, Kontrolle über Ausnahmen (Status quo). Transformational = Motivation über Vision, Vorbild und individuelle Förderung (die 4 I), fördert Wandel und intrinsische Motivation.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">2. Nenne die vier AGIL-Funktionen.</div>
+      <div class="ans">Adaptation (Anpassung/Ressourcen), Goal Attainment (Zielerreichung), Integration (Zusammenhalt), Latency (Werte/Kultur bewahren).</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">3. Wofür steht SMART bei Zielvereinbarungen?</div>
+      <div class="ans">Spezifisch, Messbar, Ausführbar (attraktiv), Relevant, Terminierbar.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+  </div>
+
+  <div class="mark-done">
+    <input type="checkbox" class="donebox" data-id="organisation" onclick="markDone('organisation',this)" id="d-organisation">
+    <label for="d-organisation">Block 6 gelernt</label>
+  </div>
+  <p class="src">Quellen: Vorlesung Kap. 8 Organisation (AGIL, Kultur/Klima, 8.3 Führung, MbO/SMART); Führungstheorie nach Bass (transaktional/transformational).</p>
+</section>
+<!-- ================= PERSONAL ================= -->
+<section class="block" id="personal">
+  <div class="kicker">Block 7 &middot; Vorlesung Kap. 9 Personal + Seminar Personalauswahl/MBTI</div>
+  <h1 class="page">Personal &amp; Personalauswahl</h1>
+  <p class="lead">Wie findet man die richtigen Mitarbeitenden? Schwerpunkt: die Gütekriterien und vor allem die <b>prognostische Validität</b> &ndash; ein sehr beliebtes Klausurthema mit Zahlen.</p>
+
+  <div class="mininav">
+    <a href="#p1">Kernfragen</a><a href="#p2">Eignungsdiagnostik</a><a href="#p3">Gütekriterien</a><a href="#p4">Prognostische Validität</a><a href="#p5">Validität der Verfahren</a><a href="#p6">Taylor-Russel</a><a href="#p7">Übungsfragen</a>
+  </div>
+
+  <h2 id="p1">Die drei Kernfragen der Personalauswahl</h2>
+  <ul>
+    <li>Welche Mitarbeitenden brauchen wir? → <b>Arbeits- und Anforderungsanalyse</b></li>
+    <li>Wo finden wir sie? → <b>Personalmarketing</b></li>
+    <li>Wie wählen wir die Richtigen aus? → <b>Eignungsdiagnostik &amp; Auswahlverfahren</b></li>
+  </ul>
+
+  <h2 id="p2">Ansätze der Eignungsdiagnostik</h2>
+  <table class="compare">
+    <tr><th>Ansatz</th><th>Erklärt Berufserfolg durch…</th><th>Verfahren</th></tr>
+    <tr><td><b>Eigenschaftsorientiert</b></td><td>relativ stabile Persönlichkeitseigenschaften</td><td>Leistungs- &amp; Persönlichkeitstests (z.&nbsp;B. GMA, Big Five)</td></tr>
+    <tr><td><b>Simulationsorientiert</b></td><td>erfolgsrelevantes berufsbezogenes Verhalten</td><td>Arbeitsproben, Assessment Center</td></tr>
+    <tr><td><b>Biografieorientiert</b></td><td>früheres Verhalten / Entwicklung über die Zeit</td><td>Analyse von Lebenslauf &amp; Bewerbungsunterlagen</td></tr>
+  </table>
+
+  <h2 id="p3">Gütekriterien eines Auswahlverfahrens</h2>
+  <div class="grid2">
+    <div class="def"><b>Objektivität</b> &ndash; das Ergebnis hängt nicht davon ab, wer den Test durchführt/auswertet (oder ob online/Papier).</div>
+    <div class="def"><b>Reliabilität</b> &ndash; Zuverlässigkeit: bei Wiederholung beim selben Bewerber kommt dasselbe heraus.</div>
+    <div class="def"><b>Validität</b> &ndash; Gültigkeit: der Test misst wirklich das, was er messen soll (z.&nbsp;B. Gewissenhaftigkeit).</div>
+    <div class="def"><b>Reihenfolge:</b> Objektivität ist Voraussetzung für Reliabilität, Reliabilität Voraussetzung für Validität.</div>
+  </div>
+
+  <h2 id="p4">Prognostische Validität (Schwerpunkt!)</h2>
+  <div class="def"><b>Prognostische Validität</b> sagt aus, <b>wie gut ein Verfahren den zukünftigen Berufserfolg vorhersagt</b>. Sie wird als <b>Korrelation r</b> zwischen dem <b>Prädiktor</b> (z.&nbsp;B. Testergebnis, Schulnoten) und dem <b>Kriterium</b> (z.&nbsp;B. Leistungsbeurteilung durch Vorgesetzte) angegeben → Validitätskoeffizient r.</div>
+  <p><b>Wichtig &ndash; erklärte Varianz:</b> Der Anteil der erklärten Varianz ist <b>r²</b>.</p>
+  <div class="calc">Schulnoten als Prädiktor: r = 0,45
+<br>erklärte Varianz = r² = 0,45² = 0,2025 → <span class="hl">≈ 20 %</span>
+<br><br>Ein Intelligenztest kann bis zu <span class="r">25 %</span> des Ausbildungserfolgs erklären.
+<br>Graphologische Gutachten: Vorhersagekraft ≈ <span class="r">0</span>.</div>
+  <table class="compare">
+    <tr><th>Validitätskoeffizient r</th><th>Bewertung</th></tr>
+    <tr><td>r = 0,50</td><td>sehr gutes Verfahren</td></tr>
+    <tr><td>r = 0,20</td><td>Untergrenze der Brauchbarkeit</td></tr>
+  </table>
+  <div class="def"><b>Inkrementelle Validität</b> = der <b>Zuwachs</b> an Validität, wenn man mehrere Verfahren <b>kombiniert</b> (z.&nbsp;B. Intelligenztest + strukturiertes Interview). Ein einzelnes Verfahren sagt Berufserfolg nie perfekt vorher.</div>
+
+  <h2 id="p5">Validität einzelner Verfahren (Schmidt &amp; Hunter)</h2>
+  <p>Die berühmte Meta-Analyse (Schmidt &amp; Hunter 1998; aktualisiert 2022) ordnet die Verfahren nach Vorhersagekraft. Grobe Rangfolge (Tendenz):</p>
+  <ul>
+    <li><b>Hoch:</b> allgemeine kognitive Fähigkeit (GMA/Intelligenz), strukturierte Interviews, Arbeitsproben.</li>
+    <li><b>Mittel:</b> Integritätstests, Gewissenhaftigkeit, Assessment Center.</li>
+    <li><b>Niedrig/kaum:</b> Berufserfahrung (Jahre), unstrukturierte Interviews, Grafologie (~0), Alter.</li>
+  </ul>
+  <p class="src">Die Neubewertung 2022 korrigierte einige Werte nach unten (v.&nbsp;a. GMA), betont aber weiter: <b>strukturierte</b> Verfahren und <b>Kombinationen</b> sind am besten.</p>
+
+  <h2 id="p6">Nutzen der Auswahl: Taylor &amp; Russel</h2>
+  <p>Der <b>Nutzen</b> eines Auswahlverfahrens = wie sehr es die Qualität der Ausgewählten verbessert (gegenüber „kein Verfahren“). Taylor &amp; Russel (1939): Der Erfolg hängt von <b>drei Faktoren</b> ab:</p>
+  <ol>
+    <li><b>Validitätskoeffizient</b> (wie gut sagt das Verfahren vorher)</li>
+    <li><b>Grundquote</b> (base rate: Anteil geeigneter Personen ohne Verfahren)</li>
+    <li><b>Selektionsquote</b> (wie streng wird ausgewählt: wenige Stellen, viele Bewerber = niedrige Quote)</li>
+  </ol>
+  <p>Weitere Nutzenmodelle: Naylor-Shine (durchschnittlicher Leistungswert), Brogden-Cronbach-Gleser (monetärer Nutzen). Standard: <b>DIN 33430</b> zur berufsbezogenen Eignungsdiagnostik.</p>
+
+  <h2 id="p7">Übungsfragen</h2>
+  <div class="quiz">
+    <div class="q"><div class="qtext">1. Was bedeutet eine prognostische Validität von r = 0,40?</div>
+      <div class="ans">Der Prädiktor korreliert zu 0,40 mit dem Berufserfolg. Erklärte Varianz = 0,40² = 0,16 → das Verfahren erklärt <b>16&nbsp;%</b> der Unterschiede im Berufserfolg. Brauchbar, aber weit von perfekt.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">2. Unterschied Reliabilität vs. Validität?</div>
+      <div class="ans">Reliabilität = Zuverlässigkeit (gleiches Ergebnis bei Wiederholung). Validität = Gültigkeit (misst das Richtige). Ein Test kann reliabel, aber invalide sein (misst konstant das Falsche). Reliabilität ist Voraussetzung für Validität.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">3. Was ist inkrementelle Validität?</div>
+      <div class="ans">Der zusätzliche Validitätsgewinn durch die Kombination mehrerer Verfahren &ndash; z.&nbsp;B. Intelligenztest plus strukturiertes Interview sagen zusammen mehr vorher als jedes allein.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">4. Von welchen drei Faktoren hängt der Nutzen nach Taylor &amp; Russel ab?</div>
+      <div class="ans">Validitätskoeffizient, Grundquote (base rate) und Selektionsquote.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+  </div>
+
+  <div class="mark-done">
+    <input type="checkbox" class="donebox" data-id="personal" onclick="markDone('personal',this)" id="d-personal">
+    <label for="d-personal">Block 7 gelernt</label>
+  </div>
+  <p class="src">Quellen: Vorlesung Kap. 9 Personal (Eignungsdiagnostik, Gütekriterien, prognostische Validität, Taylor-Russel, DIN 33430); Schmidt &amp; Hunter 1998 / Sackett et&nbsp;al. 2022 (Validität der Selektionsmethoden).</p>
+</section>
+<!-- ================= GESELLSCHAFT ================= -->
+<section class="block" id="gesellschaft">
+  <div class="kicker">Block 8 &middot; Vorlesung Kap. 11 Gesellschaft + Seminar UBI</div>
+  <h1 class="page">Gesellschaft &amp; Entwicklung</h1>
+  <p class="lead">Die Makroebene: Konjunktur, Arbeitslosigkeit und ihre psychische Wirkung, Grundeinkommen, Globalisierung und Nachhaltigkeit. Schwerpunkt: <b>Wirkung von Arbeitslosigkeit auf die Lebenszufriedenheit</b>.</p>
+
+  <div class="mininav">
+    <a href="#s1">Konjunktur</a><a href="#s2">Arbeitslosigkeit &amp; Zufriedenheit</a><a href="#s3">Moderatoren</a><a href="#s4">Unbezahlte Arbeit</a><a href="#s5">Grundeinkommen (UBI)</a><a href="#s6">Übungsfragen</a>
+  </div>
+
+  <h2 id="s1">Konjunktur</h2>
+  <p><b>Konjunktur</b> bezeichnet die gesamtwirtschaftliche Lage einer Volkswirtschaft und schwankt in <b>Zyklen</b>: Aufschwung → Boom/Hochkonjunktur → Abschwung/Rezession → Tief/Depression. Kenngrößen (von Keynes geprägt): BIP, Beschäftigung, Nachfrage, Investitionen. Der Staat kann antizyklisch gegensteuern (keynesianisch, siehe <a data-goto="commanding">Block 2</a>).</p>
+
+  <h2 id="s2">Wirkung von Arbeitslosigkeit auf die Lebenszufriedenheit</h2>
+  <div class="def">Arbeitslosigkeit wirkt sich <b>im Durchschnitt stark negativ</b> auf die Lebenszufriedenheit aus &ndash; und zwar <b>über den reinen Einkommensverlust hinaus</b>. Arbeit stiftet auch latenten Nutzen: Zeitstruktur, soziale Kontakte, Status/Identität, Sinn, Aktivität (Jahoda). Fällt das weg, leidet das Wohlbefinden.</div>
+  <p><b>Attribution</b> spielt eine wichtige Rolle: Wird die Arbeitslosigkeit als <b>selbstverschuldet (internal)</b> oder als <b>strukturell bedingt (external)</b> zugeschrieben? Internale Attribution belastet das Selbstwertgefühl meist stärker.</p>
+  <p>Auch <b>antizipierte</b> (befürchtete) Arbeitslosigkeit ist eine psychische Belastung. Unterschieden werden <b>(affektive) Befürchtungen</b> und <b>(kognitive) Bedenken</b>.</p>
+
+  <h2 id="s3">Moderatoren der individuellen Auswirkungen (Kirchler 2011)</h2>
+  <p>Warum trifft Arbeitslosigkeit Menschen unterschiedlich hart? Moderatoren:</p>
+  <ul>
+    <li>Dauer der Arbeitslosigkeit</li>
+    <li>Subjektive Bedeutung der Arbeit</li>
+    <li>Subjektive Ursachen (Attribution)</li>
+    <li>Persönlichkeitsmerkmale</li>
+    <li>Soziodemografische Merkmale</li>
+    <li>Persönliche Aktivitäten</li>
+    <li>Frühere Erfahrungen mit Arbeitslosigkeit</li>
+    <li>Soziale und emotionale Unterstützung</li>
+  </ul>
+
+  <h2 id="s4">Funktionen unbezahlter Arbeit</h2>
+  <p>Ehrenamt/unbezahlte Arbeit kann einen Teil des latenten Nutzens von Erwerbsarbeit ersetzen:</p>
+  <ul>
+    <li><b>Werte</b> &ndash; aus Überzeugung handeln (z.&nbsp;B. Nächstenliebe)</li>
+    <li><b>Erfahrung</b> &ndash; die Welt kennenlernen, ungenutzte Fertigkeiten einsetzen</li>
+    <li><b>Selbstwert</b> &ndash; persönlich wachsen</li>
+    <li><b>Karriere</b> &ndash; Erfahrungen für den Beruf sammeln</li>
+    <li><b>Soziale Anpassung</b> &ndash; soziale Beziehungen stärken</li>
+  </ul>
+
+  <h2 id="s5">Bedingungsloses Grundeinkommen (UBI)</h2>
+  <p>Im UBI-Seminar diskutiert: Ein <b>bedingungsloses Grundeinkommen</b> würde jedem Bürger einen festen Betrag ohne Bedürftigkeitsprüfung zahlen. Historische Wurzeln: Milton <b>Friedmans negative Einkommensteuer</b> (rechtsliberale Variante, schlanker Staat) und die liberalen Ökonomen Tobin/Galbraith. <b>Thomas Piketty</b> bringt die Ungleichheits­debatte ein („Ungleichheit zerstört die Demokratie“). Argumente pro: Existenzsicherung, Entbürokratisierung, Absicherung gegen KI-Jobverluste. Contra: Finanzierung, Arbeitsanreize, Inflation. → Ideales Feld für eine <b>kritische Stellungnahme</b> (normativ/präskriptiv, siehe <a data-goto="grundlagen">Block 1</a>).</p>
+
+  <h2 id="s6">Übungsfragen</h2>
+  <div class="quiz">
+    <div class="q"><div class="qtext">1. Warum senkt Arbeitslosigkeit die Lebenszufriedenheit über den Einkommensverlust hinaus?</div>
+      <div class="ans">Weil Arbeit auch latenten Nutzen stiftet: Zeitstruktur, soziale Kontakte, Status/Identität, Sinn und Aktivität. Fällt das weg, leidet das psychische Wohlbefinden zusätzlich zum finanziellen Verlust.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">2. Welche Rolle spielt Attribution?</div>
+      <div class="ans">Ob die Person die Ursache bei sich selbst (internal, selbstverschuldet) oder in den Umständen (external, strukturell) sieht. Internale Attribution belastet Selbstwert und Zufriedenheit tendenziell stärker.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">3. Nenne drei Moderatoren der Auswirkungen von Arbeitslosigkeit.</div>
+      <div class="ans">z.&nbsp;B. Dauer der Arbeitslosigkeit, subjektive Bedeutung der Arbeit, soziale/emotionale Unterstützung (weitere: Persönlichkeit, Attribution, frühere Erfahrungen, Aktivitäten, Soziodemografie).</div>
+      <button class="reveal">Antwort zeigen</button></div>
+  </div>
+
+  <div class="mark-done">
+    <input type="checkbox" class="donebox" data-id="gesellschaft" onclick="markDone('gesellschaft',this)" id="d-gesellschaft">
+    <label for="d-gesellschaft">Block 8 gelernt</label>
+  </div>
+  <p class="src">Quellen: Vorlesung Kap. 11 Gesellschaft (Konjunktur, 11.2 Arbeitslosigkeit &amp; Lebenszufriedenheit, Moderatoren nach Kirchler 2011, Funktionen unbezahlter Arbeit); Seminar UBI (Friedman, Piketty, Tobin/Galbraith).</p>
+</section>
+<!-- ================= FALLSTUDIEN ================= -->
+<section class="block" id="fallstudien">
+  <div class="kicker">Block 9 &middot; Seminare Managerial Decision Making, Geschäftsmodell, Biografie/Impact</div>
+  <h1 class="page">Fallstudien</h1>
+  <p class="lead">Fälle verbinden mehrere Konzepte. Genau das will die Klausur: Theorie am Beispiel anwenden. Schwerpunkt Theranos; Aldi/Lidl und Henry Ford zur Abrundung.</p>
+
+  <div class="mininav">
+    <a href="#fa1">Theranos</a><a href="#fa2">Aldi &amp; Lidl</a><a href="#fa3">Henry Ford &amp; AGIL</a><a href="#fa4">Übungsfragen</a>
+  </div>
+
+  <h2 id="fa1">Theranos &amp; Elizabeth Holmes</h2>
+  <p><b>Was war Theranos?</b> Ein US-Startup (gegr. 2003 von Elizabeth Holmes), das mit einem einzigen Tropfen Blut hunderte Labortests billig und schnell durchführen wollte („Edison“-Gerät). Bewertet mit ~9&nbsp;Mrd.&nbsp;$. Das Problem: Die Technologie <b>funktionierte nie</b>. 2015/16 durch Whistleblower und den Wall-Street-Journal-Journalisten John Carreyrou aufgedeckt; 2022 wurde Holmes wegen Betrugs verurteilt.</p>
+  <div class="callout exam"><b>Analyse entlang der Seminar-Leitfragen:</b></div>
+  <table class="compare">
+    <tr><th>Dimension</th><th>Was im Fall Theranos passierte</th></tr>
+    <tr><td><b>Geschäftsmodell</b></td><td><b>Value Proposition</b>: schmerzarme, billige, schnelle Bluttests aus einem Tropfen. <b>Wertschöpfung</b>: (angeblich) proprietäre Geräte + Partnerschaften (Walgreens). <b>Ertragsmodell</b>: Testverkauf/Skalierung im Einzelhandel. → Das Modell war <b>schlüssig erzählt</b>, aber die Wertschöpfung existierte technisch nicht.</td></tr>
+    <tr><td><b>Geweckte Erwartungen</b></td><td>Investoren (Milliarden), Patienten/Kunden, Partner (Walgreens), Politik/Prominente im Board (Kissinger, Mattis), Medien (Hype um die „nächste Steve Jobs“).</td></tr>
+    <tr><td><b>Psychologie</b></td><td><b>Repräsentativitätsheuristik</b> (Holmes „sah aus wie“ ein Tech-Genie: Rollkragen, Stanford-Abbruch), <b>Overconfidence</b>, <b>Halo-Effekt</b> (prominentes Board), <b>Group Think</b> &amp; <b>Confirmation Bias</b>, <b>Framing</b> einer Vision.</td></tr>
+    <tr><td><b>Ökonomie/Recht/Politik/Medien</b></td><td>FOMO-getriebene Investoren, laxe Regulierung (Bluttests), NDAs gegen Kritiker, mediale Heldengeschichte &ndash; alle Elemente wurden genutzt, um die Illusion zu stützen.</td></tr>
+    <tr><td><b>Whistleblowing</b></td><td>Junge Mitarbeiter (z.&nbsp;B. Tyler Shultz) meldeten die Manipulationen trotz massiven Drucks und Einschüchterung &ndash; zentral für die Aufdeckung. Profil: hohe Integrität, moralischer Mut gegen Machtgefälle.</td></tr>
+    <tr><td><b>Wertediskussion</b></td><td>„Responsible Business“: Bei Medizinprodukten geht es um Menschenleben &ndash; „fake it till you make it“ ist hier hochgefährlich. Verantwortung, Ethik, Corporate Governance.</td></tr>
+  </table>
+  <div class="callout tip"><b>Klausur-Brücke:</b> Theranos verbindet fast alle Themen &ndash; Geschäftsmodell (3 Kriterien), Heuristiken, Overconfidence, Konstruktivismus (Framing/Agenda Setting), Entrepreneurship und die Wertediskussion. Ein perfektes „Anwendungsbeispiel“.</div>
+
+  <h2 id="fa2">Aldi &amp; Lidl (Kurz-Recap)</h2>
+  <p>Ausführlich in <a data-goto="oekonomie">Block 3</a>. Kern: <b>Discount = Kostenführerschaft</b>. Value Proposition „günstig + verlässlich“, Wertschöpfung über schlankes Sortiment/Eigenmarken/Einkaufsmacht/Effizienz, Ertragsmodell „kleine Marge × große Menge“. Schwarz-Gruppe (Lidl) zusätzlich diversifiziert (Stackit-Cloud, Recycling, KI).</p>
+
+  <h2 id="fa3">Henry Ford &amp; das AGIL-Modell</h2>
+  <p>Seminar-Aufgabe: Welchen Einfluss hatte Henry Ford &ndash; je eine Auswirkung pro AGIL-Kategorie?</p>
+  <table class="compare">
+    <tr><th>AGIL</th><th>Auswirkung von Fords Wirken</th></tr>
+    <tr><td><b>A</b>daptation</td><td>Fließband &amp; Massenproduktion → enorme Produktivität, billige Autos (Model T), Anpassung der Wirtschaft an Massenkonsum.</td></tr>
+    <tr><td><b>G</b>oal Attainment</td><td>„Ein Auto für jedermann“ &ndash; klares Unternehmensziel, das Mobilität demokratisierte.</td></tr>
+    <tr><td><b>I</b>ntegration</td><td>„5-Dollar-Tag“ (hohe Löhne) → Arbeiter wurden zu Kunden; soziale Integration, aber auch strikte Kontrolle/Taylorismus.</td></tr>
+    <tr><td><b>L</b>atency</td><td>Prägte Werte/Kultur der Industriegesellschaft („Fordismus“): Konsumkultur, Arbeitsethos &ndash; zugleich Schattenseiten (Monotonie, autoritäre Kontrolle).</td></tr>
+  </table>
+
+  <h2 id="fa4">Übungsfragen</h2>
+  <div class="quiz">
+    <div class="q"><div class="qtext">1. Welche Heuristiken/Biases erklären den Theranos-Hype?</div>
+      <div class="ans">Repräsentativität (Holmes „wirkte wie“ ein Genie), Overconfidence, Halo-Effekt (prominentes Board), Group Think, Confirmation Bias und Framing einer visionären Story &ndash; verstärkt durch FOMO der Investoren.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">2. Warum ist Theranos ein Fall für die Wertediskussion „Responsible Business“?</div>
+      <div class="ans">Weil es um medizinische Diagnostik ging &ndash; falsche Blutwerte gefährden Menschenleben. Das „fake it till you make it“ der Startup-Kultur wird hier unethisch und illegal; es braucht Verantwortung, Governance und Regulierung.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">3. Beschreibe das Theranos-Geschäftsmodell in den drei Kriterien.</div>
+      <div class="ans">Value Proposition: billige, schnelle, schmerzarme Bluttests aus einem Tropfen. Wertschöpfung: (angeblich) eigene Geräte + Handelspartner. Ertragsmodell: skalierter Testverkauf. Problem: Die Wertschöpfung funktionierte technisch nicht &ndash; das Modell war nur erzählt.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+  </div>
+
+  <div class="mark-done">
+    <input type="checkbox" class="donebox" data-id="fallstudien" onclick="markDone('fallstudien',this)" id="d-fallstudien">
+    <label for="d-fallstudien">Block 9 gelernt</label>
+  </div>
+  <p class="src">Quellen: Seminar 8 / Vertiefung (Theranos-Leitfragen, Elizabeth Holmes); Geschäftsmodell-Seminar (Aldi/Lidl); Seminar Biografie &amp; gesellschaftlicher Impact (Henry Ford, AGIL).</p>
+</section>
+
+<!-- ================= ZEITUNG ================= -->
+<section class="block" id="zeitung">
+  <div class="kicker">Block 10 &middot; Seminar 2 (Zeitungsartikel &amp; Links)</div>
+  <h1 class="page">Zeitungsartikel-Bezug zur Vorlesung</h1>
+  <p class="lead">Eine typische Aufgabe: einen aktuellen Artikel nehmen und mit Vorlesungskonzepten verbinden. Hier lernst du das Vorgehen &ndash; plus die konkreten Artikel aus deinem Kursordner.</p>
+
+  <h2>So stellst du den Bezug her (Schema)</h2>
+  <ol>
+    <li><b>Kurz zusammenfassen:</b> Worum geht es im Artikel (2&ndash;3 Sätze)?</li>
+    <li><b>Aussagetyp bestimmen:</b> deskriptiv, explikativ, normativ oder präskriptiv? (siehe <a data-goto="grundlagen">Block 1</a>)</li>
+    <li><b>Konzepte andocken:</b> Welche Vorlesungsthemen passen? (Battle of Ideas, Geschäftsmodell, Heuristiken, Konstruktivismus, Arbeitsmarkt…)</li>
+    <li><b>Technik erkennen:</b> Wird geframt, Agenda gesetzt, fragmentiert? Wessen Interesse steckt dahinter?</li>
+    <li><b>Kritische Stellungnahme:</b> begründetes eigenes Urteil.</li>
+  </ol>
+
+  <h2>Artikel 1: „Der Weltraum ist ein gigantisches Geschäft“ (Handelsblatt, April 2026)</h2>
+  <p>Themen: Wirtschaftsordnung, Wachstum, Staatseffizienz, kommerzielle Raumfahrt (Artemis, NewSpace).</p>
+  <div class="card tight"><b>Bezüge:</b> Staat vs. Markt (<a data-goto="commanding">Battle of Ideas</a>) &ndash; wer treibt Innovation, staatliche Programme (NASA) oder private Firmen (SpaceX)? Geschäftsmodelle im NewSpace (Value Proposition „Zugang zum All“), Wachstumsmärkte, Wertorientierung/Economic Profit bei kapitalintensiven Investments.</div>
+
+  <h2>Artikel 2: „Die KI schaut jedem Mitarbeiter bei Meta über die Schulter“ (Der Spiegel, April 2026)</h2>
+  <p>Themen: KI registriert die Arbeit der Angestellten, um Büroarbeit zu automatisieren; Meta-Mitarbeiter werden zu KI-Trainern.</p>
+  <div class="card tight"><b>Bezüge:</b> Zukunft der Arbeit &amp; <a data-goto="gesellschaft">Arbeitslosigkeit</a> (Automatisierungsrisiko, antizipierte Arbeitslosigkeit, Grundeinkommen als Antwort), <a data-goto="organisation">Organisation &amp; Führung</a> (Überwachung/Kontrolle vs. Vertrauen, transaktional vs. transformational), Konstruktivismus/Framing (wie wird „KI am Arbeitsplatz“ dargestellt &ndash; Fortschritt oder Kontrolle?), Wertediskussion (Datenschutz, Verantwortung).</div>
+  <p class="src">Weiterer Link aus Seminar 2: Spiegel „Meta-Angestellte werden zu KI-Trainern“; onpulson „Economic-Profit-Modell“.</p>
+
+  <div class="callout tip"><b>Klausur-Tipp:</b> Du musst den genauen Artikel nicht auswendig können. Wichtig ist das <b>Vorgehen</b>: zusammenfassen → Aussagetyp → 2&ndash;3 Vorlesungskonzepte sauber andocken → kritisch werten.</div>
+
+  <div class="mark-done">
+    <input type="checkbox" class="donebox" data-id="zeitung" onclick="markDone('zeitung',this)" id="d-zeitung">
+    <label for="d-zeitung">Block 10 gelernt</label>
+  </div>
+  <p class="src">Quellen: Seminar 2 Linksammlung (Handelsblatt, Der Spiegel, onpulson).</p>
+</section>
+<!-- ================= KLAUSURTRAINING ================= -->
+<section class="block" id="klausur">
+  <div class="kicker">Block 11 &middot; Generalprobe</div>
+  <h1 class="page">Klausurtraining &ndash; gemischter Fragenkatalog</h1>
+  <p class="lead">Alles gemischt, wie in der Klausur. Erst selbst beantworten, dann aufdecken. Wenn du hier ~80&nbsp;% schaffst, bist du gut vorbereitet.</p>
+
+  <div class="callout exam"><b>Format-Hinweis:</b> Die Prüfung läuft laut Unterlagen über <b>EvaExam</b> (Leuphana). Rechne mit Wissensfragen, Anwendungs-/Transferfragen, mindestens einer <b>Rechenaufgabe (Economic Profit)</b> und offenen Fragen mit „kritischer Stellungnahme“.</div>
+
+  <h2>Rechnen</h2>
+  <div class="quiz">
+    <div class="q"><div class="qtext">R1. 25&nbsp;% EK (Kosten 12&nbsp;%), 75&nbsp;% FK (Kosten 8&nbsp;%). Preis 238&nbsp;€ inkl. 19&nbsp;% USt., 20 Stück verkauft, Kosten 3.000&nbsp;€, Kapital 5.000&nbsp;€. Economic Profit?</div>
+      <div class="ans">Nettopreis = 238/1,19 = 200&nbsp;€. Umsatz = 200×20 = 4.000&nbsp;€. Betriebsergebnis = 4.000 − 3.000 = 1.000&nbsp;€. WACC = 0,25×12% + 0,75×8% = 3% + 6% = 9%. Kapitalkosten = 9%×5.000 = 450&nbsp;€. <b>EP = 1.000 − 450 = +550&nbsp;€</b> (ROIC = 20% &gt; WACC 9% → Wert geschaffen).</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">R2. Mindestreservesatz 5&nbsp;%, Ersteinlage 2.000&nbsp;€. Maximale Buchgeldmenge?</div>
+      <div class="ans">Multiplikator = 1/0,05 = 20. Geldmenge = 2.000 × 20 = <b>40.000&nbsp;€</b>.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">R3. Ein Verfahren hat r = 0,30. Wie viel Prozent des Berufserfolgs erklärt es?</div>
+      <div class="ans">r² = 0,30² = 0,09 → <b>9&nbsp;%</b>. Knapp über der Brauchbarkeitsgrenze (r = 0,20).</div>
+      <button class="reveal">Antwort zeigen</button></div>
+  </div>
+
+  <h2>Verstehen &amp; Anwenden</h2>
+  <div class="quiz">
+    <div class="q"><div class="qtext">V1. Erkläre den „Battle of Ideas“ in 3&ndash;4 Sätzen.</div>
+      <div class="ans">Der jahrzehntelange Streit, ob Staat (Keynes) oder Markt (Hayek/Friedman) die „commanding heights“ der Wirtschaft steuern soll. Keynes setzte sich nach 1929/im Nachkriegs-Bretton-Woods durch, ab ~1980 gewann die marktliberale Linie (Thatcher/Reagan). Krisen wie 2008 und Corona belebten die Debatte neu &ndash; sie ist bis heute offen.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">V2. Nenne und erkläre die drei Klausur-Heuristiken mit je einem Beispiel.</div>
+      <div class="ans">Verfügbarkeit (Leicht­abrufbares wird überschätzt &ndash; Crash in den Medien). Overconfidence (Selbstüberschätzung &ndash; Trader glaubt, den Markt zu schlagen). Repräsentativität (Beurteilung nach Prototyp-Ähnlichkeit &ndash; „Einhorn-Startup“, Theranos).</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">V3. Beschreibe das Geschäftsmodell von Lidl anhand der drei Kriterien.</div>
+      <div class="ans">Value Proposition: niedrige Preise bei ordentlicher Qualität und etwas Auswahl/Aktionen. Wertschöpfung: schlanke, hocheffiziente Prozesse, Eigenmarken, Einkaufsmacht, starke Vertikalisierung der Schwarz-Gruppe. Ertragsmodell: kleine Marge × hoher Umschlag; zusätzlich neue Erlöse (Cloud/IT).</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">V4. Unterscheide transaktionale und transformationale Führung.</div>
+      <div class="ans">Transaktional = Leistung gegen Belohnung, Kontrolle über Ausnahmen (Status quo). Transformational = Inspiration über Vision, Vorbild, intellektuelle Anregung und individuelle Förderung (4 I), fördert Wandel und intrinsische Motivation.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">V5. Wie erkläre ich „wie Geld entsteht“?</div>
+      <div class="ans">Zentralbankgeld (Bargeld + Reserven) schafft die Zentralbank. Den Großteil, das Buchgeld, schaffen Geschäftsbanken bei jeder Kreditvergabe per Buchung („aus dem Nichts“). Die Mindestreserve begrenzt die Menge; Multiplikator = 1/Reservesatz.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">V6. Wie wirkt Arbeitslosigkeit auf die Lebenszufriedenheit, und wovon hängt es ab?</div>
+      <div class="ans">Im Schnitt stark negativ, über den Einkommensverlust hinaus (Verlust von Zeitstruktur, Kontakten, Status, Sinn). Moderatoren u.&nbsp;a.: Dauer, subjektive Bedeutung der Arbeit, Attribution (internal/external), soziale Unterstützung, Persönlichkeit.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">V7. Kritische Stellungnahme: „Ein bedingungsloses Grundeinkommen macht die Menschen faul.“</div>
+      <div class="ans">Aussagetyp: präskriptiv/normativ mit empirischer Behauptung. Prüfen: „faul“ ist wertend und empirisch umstritten (Pilotstudien zeigen gemischte/moderate Effekte). Perspektiven: pro (Existenzsicherung, Absicherung gegen KI-Jobverluste, Entbürokratisierung, Friedmans negative Einkommensteuer) vs. contra (Finanzierung, Arbeitsanreize, Inflation). Framing beachten („faul“ ist negativ gerahmt). Urteil: differenziert, mit Verweis auf Datenlage statt Pauschalurteil.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">V8. Ordne die Aussage ein und nimm Stellung: „Der Markt regelt das am besten.“</div>
+      <div class="ans">Normativ/präskriptiv, Hayek/Friedman-Position. Kritisch: In welchem Bereich? Bei öffentlichen Gütern, externen Effekten, Informationsasymmetrien (Theranos!) versagt der Markt teils &ndash; Gegenposition Keynes. Kein Automatismus, sondern kontextabhängig → Battle of Ideas.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">V9. Was ist prognostische vs. inkrementelle Validität?</div>
+      <div class="ans">Prognostische Validität = wie gut ein Verfahren den künftigen Berufserfolg vorhersagt (Korrelation r zwischen Prädiktor und Kriterium). Inkrementelle Validität = zusätzlicher Validitätsgewinn durch Kombination mehrerer Verfahren.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+    <div class="q"><div class="qtext">V10. Nenne vier Konstruktivismus-Techniken und je ein Stichwort.</div>
+      <div class="ans">Framing (Deutungsrahmen), Agenda Setting (Themen setzen), Fragmenting (Teilaspekt überbetonen), Playing it multiple ways (verschiedenen Gruppen unterschiedlich darstellen); dazu Group Think und Confirmation Bias.</div>
+      <button class="reveal">Antwort zeigen</button></div>
+  </div>
+
+  <h2>Finale Checkliste vor der Klausur</h2>
+  <div class="card">
+    <ul>
+      <li>Economic Profit rechnen können (USt. rausrechnen, WACC, EP = Betriebsergebnis − WACC×Kapital). ✔</li>
+      <li>Keynes / Hayek / Friedman + Bretton Woods + IWF/Weltbank/AIIB erklären. ✔</li>
+      <li>Geschäftsmodell = Value Proposition + Wertschöpfung + Ertragsmodell; Aldi &amp; Lidl anwenden. ✔</li>
+      <li>Geldschöpfung: Zentralbank vs. Geschäftsbanken, Multiplikator. ✔</li>
+      <li>3 Heuristiken + Overconfidence sicher unterscheiden. ✔</li>
+      <li>Prognostische Validität (r, r², Werte 0,20 / 0,50). ✔</li>
+      <li>Transaktional vs. transformational (4 I). ✔</li>
+      <li>Arbeitslosigkeit → Lebenszufriedenheit + Attribution + Moderatoren. ✔</li>
+      <li>Aussagetypen + kritische Stellungnahme + Zeitungsbezug beherrschen. ✔</li>
+      <li>Theranos als Anwendungsfall parat haben. ✔</li>
+    </ul>
+  </div>
+
+  <div class="mark-done">
+    <input type="checkbox" class="donebox" data-id="klausur" onclick="markDone('klausur',this)" id="d-klausur">
+    <label for="d-klausur">Klausurtraining absolviert</label>
+  </div>
+  <p class="src">Zusammengestellt aus allen Vorlesungs- und Seminarunterlagen des Kurses (Prof. Süßmair, Wirtschaftspsychologie I, SS 2026).</p>
+</section>
+    </div>
+  </div>
+</div>
+
+<script>
+const nav=document.getElementById('nav');
+const links=[...document.querySelectorAll('.navlink')];
+function show(id){
+  document.querySelectorAll('section.block').forEach(s=>s.classList.toggle('active',s.id===id));
+  links.forEach(l=>l.classList.toggle('active',l.dataset.target===id));
+  window.scrollTo({top:0,behavior:'instant'});
+  try{localStorage.setItem('wipsy_last',id)}catch(e){}
+  if(window.innerWidth<=860)toggleMenu(false);
+}
+links.forEach(l=>l.addEventListener('click',()=>show(l.dataset.target)));
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-goto]');
+  if(a){e.preventDefault();show(a.dataset.goto);}
+  const r=e.target.closest('button.reveal');
+  if(r){r.closest('.q').classList.toggle('open');
+    r.textContent=r.closest('.q').classList.contains('open')?'Antwort verbergen':'Antwort zeigen';}
+});
+function toggleMenu(open){
+  document.getElementById('sidebar').classList.toggle('show',open);
+  document.getElementById('scrim').classList.toggle('show',open);
+}
+/* progress */
+function markDone(id,el){
+  let done=getDone();done[id]=el.checked;
+  try{localStorage.setItem('wipsy_done',JSON.stringify(done))}catch(e){}
+  paintDone();
+}
+function getDone(){try{return JSON.parse(localStorage.getItem('wipsy_done')||'{}')}catch(e){return{}}}
+function paintDone(){
+  const done=getDone();
+  links.forEach(l=>l.classList.toggle('done',!!done[l.dataset.target]));
+  document.querySelectorAll('input.donebox').forEach(b=>{b.checked=!!done[b.dataset.id]});
+}
+function resetProgress(){
+  if(confirm('Gesamten Lernfortschritt zurücksetzen?')){
+    try{localStorage.removeItem('wipsy_done')}catch(e){}paintDone();
+  }
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  paintDone();
+  let last='start';try{last=localStorage.getItem('wipsy_last')||'start'}catch(e){}
+  if(!document.getElementById(last))last='start';
+  show(last);
+});
+</script>
+</body>
+</html>
